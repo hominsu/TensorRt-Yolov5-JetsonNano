@@ -29,6 +29,7 @@ target_link_libraries(myplugins nvinfer cudart)
 find_package(OpenCV)
 find_package(Threads REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
+
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
 

@@ -12,8 +12,6 @@
 #include <sstream>
 
 #include "server.h"
-#include "../defs/motion.h"
-#include "../defs/box.h"
 
 Server::Server() = default;
 
@@ -34,32 +32,29 @@ std::string Server::getEvBufferString(evbuffer *in_buffer) {
 }
 
 void Server::DetectImageGetRequest(evhttp_request *_request, const ServerCtx *_arg) {
-  if (uuid_.empty()) {
+  auto t_ptr = static_cast<Server *>(_arg->this_ptr);
+  if (t_ptr->uuid_.empty()) {
     evhttp_send_reply(_request, HTTP_BADREQUEST, "Not Register UUID", nullptr);
     return;
   }
 
-  auto in_buffer = evhttp_request_get_input_buffer(_request);
-  auto str = getEvBufferString(in_buffer);
+  t_ptr->SetImageCanRead(false);
+  t_ptr->SetDetect(true);
 
-  if (!str.empty() && str != "[]") {
-    nlohmann::json js_obj;
-    Motion::Pos pos{};
-
-    try {
-      js_obj = nlohmann::json::parse(str);
-      Motion::Pos::from_json(js_obj, pos);
-    } catch (...) {
-      std::cerr << "Json parse filed!" << std::endl;
-      evhttp_send_reply(_request, HTTP_BADREQUEST, "", nullptr);
-    }
-
-    auto c_ptr = static_cast<Controller *>(_arg->controller_ptr);
-    c_ptr->motion_len_.push(std::array<double, 6>{pos.x, pos.y, pos.z, pos.rx, pos.ry, 0});
-    evhttp_send_reply(_request, HTTP_OK, "Command Received Success", nullptr);
-  } else {
-    evhttp_send_reply(_request, HTTP_BADREQUEST, "", nullptr);
+  while (!t_ptr->IsImageCanRead()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
+
+  Response resp{t_ptr->GetCvMatStr(), t_ptr->GetBoxesStr()};
+  nlohmann::json js_obj;
+  resp.to_json(js_obj, resp);
+  auto data = js_obj.dump();
+
+  auto data_buf = evbuffer_new();
+  evbuffer_add(data_buf, data.c_str(), data.size());
+
+  evhttp_send_reply(_request, HTTP_OK, "Command Received Success", data_buf);
+  evbuffer_free(data_buf);
 }
 
 void Server::SetUUIDPostRequest(evhttp_request *_request, const ServerCtx *_arg) {
@@ -146,7 +141,7 @@ void Server::Main() {
     return;
 #endif
 
-  ServerCtx ctx{event_base_new(), "", this, controller_ptr_};
+  ServerCtx ctx{event_base_new(), "", this};
 
   // http 服务器
   // 创建 evhttp 上下文
@@ -320,4 +315,36 @@ std::string Server::Send(const Api::Body &_body) {
   }
 
   return ctx.str;
+}
+
+bool Server::IsDetect() const {
+  return detect_;
+}
+
+void Server::SetDetect(bool detect) {
+  detect_ = detect;
+}
+
+bool Server::IsImageCanRead() const {
+  return image_can_read_;
+}
+
+void Server::SetImageCanRead(bool image_can_read) {
+  image_can_read_ = image_can_read;
+}
+
+const std::string &Server::GetCvMatStr() const {
+  return cv_mat_str_;
+}
+
+void Server::SetCvMatStr(const std::string &cv_mat_str) {
+  cv_mat_str_ = cv_mat_str;
+}
+
+const std::string &Server::GetBoxesStr() const {
+  return boxes_str_;
+}
+
+void Server::SetBoxesStr(const std::string &boxes_str) {
+  boxes_str_ = boxes_str;
 }

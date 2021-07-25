@@ -779,22 +779,29 @@ int main(int argc, char **argv) {
   CUDA_CHECK(cudaStreamCreate(&stream));
 
   while (true) {
-    cv::Mat img;
-    capture >> img;
-    if (img.empty()) {
-      continue;
-    }
+    if (Server::Get()->IsDetect()) {
+      cv::Mat img;
+      capture >> img;
+      if (img.empty()) {
+        continue;
+      }
 
-    img = BGR2RGB(data, img);
+      img = BGR2RGB(data, img);
 
-    auto boxes = Inference(colors_list, id_name, data, prob, context, buffers, stream, img);
-    nlohmann::json(boxes).dump()
+      auto boxes = Inference(colors_list, id_name, data, prob, context, buffers, stream, img);
+      Server::Get()->SetBoxesStr(nlohmann::json(boxes).dump());
 
+      std::stringstream ss;
+      ss << img;
+      Server::Get()->SetCvMatStr(ss.str());
 
-    cv::imshow("dst", img);
-    if (cv::waitKey(1) == 'q') {
-      cv::destroyAllWindows();
-      break;
+      Server::Get()->SetDetect(false);
+
+      cv::imshow("dst", img);
+      if (cv::waitKey(1) == 'q') {
+        cv::destroyAllWindows();
+        break;
+      }
     }
   }
 

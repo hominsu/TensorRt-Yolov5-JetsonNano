@@ -2,8 +2,8 @@
 // Created by HominSu on 2021/7/22.
 //
 
-#ifndef SYSTEM_DEFS_SEND_STRUCT_H_
-#define SYSTEM_DEFS_SEND_STRUCT_H_
+#ifndef YOLOLAYER_H_DEFS_SEND_STRUCT_H_
+#define YOLOLAYER_H_DEFS_SEND_STRUCT_H_
 
 #include <nlohmann/json.hpp>
 
@@ -25,4 +25,4 @@ struct Body {
 };
 }
 
-#endif //SYSTEM_DEFS_SEND_STRUCT_H_
+#endif //YOLOLAYER_H_DEFS_SEND_STRUCT_H_

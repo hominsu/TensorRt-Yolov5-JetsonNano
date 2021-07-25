@@ -2,8 +2,8 @@
 // Created by HominSu on 2021/7/22.
 //
 
-#ifndef SYSTEM_DEFS_BOX_H_
-#define SYSTEM_DEFS_BOX_H_
+#ifndef YOLOLAYER_H_DEFS_BOX_H_
+#define YOLOLAYER_H_DEFS_BOX_H_
 
 #include <opencv4/opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
@@ -27,7 +27,6 @@ struct BoxRect {
   [[nodiscard]] inline cv::Point getMPoint() const {
     return {x + width / 2, y + height / 2};
   }
-
 };
 
 void to_json(nlohmann::json &j, const BoxRect &_box_info) {
@@ -42,6 +41,7 @@ void from_json(const nlohmann::json &j, BoxRect &_box_info) {
   j.at("height").get_to(_box_info.height);
   j.at("area").get_to(_box_info.area);
 }
+
 }
 
-#endif //SYSTEM_DEFS_BOX_H_
+#endif //YOLOLAYER_H_DEFS_BOX_H_
