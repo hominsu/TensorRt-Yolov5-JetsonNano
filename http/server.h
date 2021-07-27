@@ -16,7 +16,6 @@
 
 struct ServerCtx {
   event_base *base;
-  std::string str;
   void *this_ptr;
 };
 
@@ -29,9 +28,6 @@ class Server : public XThread {
  private:
   std::string uuid_{};
   bool detect_{};
-  bool image_can_read_{};
-  std::string cv_mat_str_{};
-  std::string boxes_str_{};
 
  public:
   ~Server();
@@ -49,16 +45,8 @@ class Server : public XThread {
  public:
   void Main() override;
   std::string Send(const Api::Body &_body);
-
   bool IsDetect() const;
   void SetDetect(bool detect);
-  bool IsImageCanRead() const;
-  void SetImageCanRead(bool image_can_read);
-  const std::string &GetCvMatStr() const;
-  void SetCvMatStr(const std::string &cv_mat_str);
-  const std::string &GetBoxesStr() const;
-  void SetBoxesStr(const std::string &boxes_str);
-
 
  private:
   static void http_server_call_back(struct evhttp_request *request, void *_arg);

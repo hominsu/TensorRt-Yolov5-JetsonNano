@@ -11,6 +11,8 @@ struct Response {
   std::string cv_mat;
   std::string boxes;
 
+  Response(const std::string &cv_mat, const std::string &boxes) : cv_mat(cv_mat), boxes(boxes) {}
+
   void to_json(nlohmann::json &j, const Response &_resp) {
     j = nlohmann::json{{"cv_mat", _resp.cv_mat}, {"boxes", _resp.boxes}};
   }
@@ -19,6 +21,7 @@ struct Response {
     j.at("cv_mat").get_to(_resp.cv_mat);
     j.at("boxes").get_to(_resp.boxes);
   }
+
 };
 
 #endif //YOLOLAYER_H_DEFS_RESPONSE_STRUCT_H_

@@ -40,6 +40,7 @@ std::vector<Box::BoxRect> Inference(const std::vector<cv::Scalar> &colors_list,
                                     void **buffers,
                                     cudaStream_t &stream,
                                     cv::Mat &img);
+
 static int get_width(int x, float gw, int divisor = 8) {
   //return math.ceil(x / divisor) * divisor
   if (int(x * gw) % divisor == 0) {
@@ -789,11 +790,18 @@ int main(int argc, char **argv) {
       img = BGR2RGB(data, img);
 
       auto boxes = Inference(colors_list, id_name, data, prob, context, buffers, stream, img);
-      Server::Get()->SetBoxesStr(nlohmann::json(boxes).dump());
 
-      std::stringstream ss;
-      ss << img;
-      Server::Get()->SetCvMatStr(ss.str());
+      std::stringstream cv_mat_ss;
+      cv_mat_ss << img;
+
+      std::stringstream boxes_ss;
+      boxes_ss << nlohmann::json(boxes).dump();
+
+      nlohmann::json js_obj;
+      Response resp{cv_mat_ss.str(), boxes_ss.str()};
+      resp.to_json(js_obj, resp);
+
+      Server::Get()->Send(Api::Body{"127.0.0.1:9000/detectDone", "POST", js_obj.dump()});
 
       Server::Get()->SetDetect(false);
 
@@ -802,6 +810,8 @@ int main(int argc, char **argv) {
         cv::destroyAllWindows();
         break;
       }
+    } else {
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
   }
 

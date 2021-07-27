@@ -38,23 +38,9 @@ void Server::DetectImageGetRequest(evhttp_request *_request, const ServerCtx *_a
     return;
   }
 
-  t_ptr->SetImageCanRead(false);
   t_ptr->SetDetect(true);
 
-  while (!t_ptr->IsImageCanRead()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
-  }
-
-  Response resp{t_ptr->GetCvMatStr(), t_ptr->GetBoxesStr()};
-  nlohmann::json js_obj;
-  resp.to_json(js_obj, resp);
-  auto data = js_obj.dump();
-
-  auto data_buf = evbuffer_new();
-  evbuffer_add(data_buf, data.c_str(), data.size());
-
-  evhttp_send_reply(_request, HTTP_OK, "Command Received Success", data_buf);
-  evbuffer_free(data_buf);
+  evhttp_send_reply(_request, HTTP_OK, "Command Received Success", nullptr);
 }
 
 void Server::SetUUIDPostRequest(evhttp_request *_request, const ServerCtx *_arg) {
@@ -81,7 +67,7 @@ void Server::http_server_call_back(struct evhttp_request *request, void *_arg) {
   // url 请求的资源地址
   const char *uri = evhttp_request_get_uri(request);
 #if DEBUG
-  std::cout << "url: " << url << std::endl;
+  std::cout << "uri: " << uri << std::endl;
 #endif
 
   // 请求类型 GET POST
@@ -141,14 +127,14 @@ void Server::Main() {
     return;
 #endif
 
-  ServerCtx ctx{event_base_new(), "", this};
+  ServerCtx ctx{event_base_new(), this};
 
   // http 服务器
   // 创建 evhttp 上下文
   auto ev_http = evhttp_new(ctx.base);
 
   // 绑定端口和 IP
-  if (0 != evhttp_bind_socket(ev_http, "0.0.0.0", 8080)) {
+  if (0 != evhttp_bind_socket(ev_http, "0.0.0.0", 8081)) {
     std::cout << "evhttp_bind_socket failed" << std::endl;
   }
 
@@ -325,26 +311,3 @@ void Server::SetDetect(bool detect) {
   detect_ = detect;
 }
 
-bool Server::IsImageCanRead() const {
-  return image_can_read_;
-}
-
-void Server::SetImageCanRead(bool image_can_read) {
-  image_can_read_ = image_can_read;
-}
-
-const std::string &Server::GetCvMatStr() const {
-  return cv_mat_str_;
-}
-
-void Server::SetCvMatStr(const std::string &cv_mat_str) {
-  cv_mat_str_ = cv_mat_str;
-}
-
-const std::string &Server::GetBoxesStr() const {
-  return boxes_str_;
-}
-
-void Server::SetBoxesStr(const std::string &boxes_str) {
-  boxes_str_ = boxes_str;
-}
