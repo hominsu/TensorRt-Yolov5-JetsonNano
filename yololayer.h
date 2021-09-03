@@ -1,5 +1,5 @@
-#ifndef _YOLO_LAYER_H
-#define _YOLO_LAYER_H
+#ifndef YOLOV5_YOLO_LAYER_H
+#define YOLOV5_YOLO_LAYER_H
 
 #include <vector>
 #include <string>
@@ -134,4 +134,4 @@ class YoloPluginCreator : public IPluginCreator {
 REGISTER_TENSORRT_PLUGIN(YoloPluginCreator);
 };
 
-#endif 
+#endif // YOLOV5_YOLO_LAYER_H

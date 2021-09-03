@@ -5,12 +5,6 @@ add_definitions(-std=c++17)
 option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 set(CMAKE_CXX_STANDARD 17)
 
-file(GLOB ProjectSRC
-        "command_service/*.cc"
-        "config/*.cc"
-        "util/*.cc"
-        "*.cc")
-
 message("")
 message("Operation system is ${CMAKE_SYSTEM}")
 
@@ -20,7 +14,7 @@ link_directories(/usr/local/cuda/lib64)
 # tensorrt
 include_directories(/usr/include/aarch64-linux-gnu/)
 link_directories(/usr/lib/aarch64-linux-gnu/)
-
+# other
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
 
@@ -35,13 +29,18 @@ elseif (CMAKE_BUILD_TYPE STREQUAL Release)
     message("")
 endif ()
 
+file(GLOB ProjectSRC
+        "model/*.cc"
+        "*.cc")
+
 find_package(CUDA REQUIRED)
 find_package(OpenCV)
 find_package(Threads REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-cuda_add_library(YoloLayerPlugin SHARED ${PROJECT_SOURCE_DIR}/yololayer.cu)
+# 创建静态链接库，也可以生成静态的（SHARED）
+cuda_add_library(YoloLayerPlugin STATIC ${PROJECT_SOURCE_DIR}/yololayer.cu)
 target_link_libraries(YoloLayerPlugin nvinfer cudart)
 
-add_executable(yolov5 calibrator.cpp yolov5.cpp http/server.cc x_thread.cc)
-target_link_libraries(yolov5 nvinfer  cudart YoloLayerPlugin ${OpenCV_LIBS} jsoncpp event Threads::Threads)
+add_executable(${PROJECT_NAME} ${ProjectSRC})
+target_link_libraries(${PROJECT_NAME} nvinfer cudart YoloLayerPlugin ${OpenCV_LIBS} Threads::Threads)

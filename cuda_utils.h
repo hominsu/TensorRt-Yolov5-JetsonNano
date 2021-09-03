@@ -1,5 +1,5 @@
-#ifndef TRTX_CUDA_UTILS_H_
-#define TRTX_CUDA_UTILS_H_
+#ifndef YOLOV5_CUDA_UTILS_H_
+#define YOLOV5_CUDA_UTILS_H_
 
 #include <cuda_runtime_api.h>
 
@@ -14,5 +14,5 @@
     }
 #endif  // CUDA_CHECK
 
-#endif  // TRTX_CUDA_UTILS_H_
+#endif  // YOLOV5_CUDA_UTILS_H_
 

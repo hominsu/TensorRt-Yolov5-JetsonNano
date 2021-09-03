@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef TENSORRT_LOGGING_H
-#define TENSORRT_LOGGING_H
+#ifndef YOLOV5_LOGGING_H
+#define YOLOV5_LOGGING_H
 
 #include "NvInferRuntimeCommon.h"
 #include <cassert>
@@ -452,4 +452,4 @@ inline LogStreamConsumer LOG_FATAL(const Logger &logger) {
 
 } // anonymous namespace
 
-#endif // TENSORRT_LOGGING_H
+#endif // YOLOV5_LOGGING_H
