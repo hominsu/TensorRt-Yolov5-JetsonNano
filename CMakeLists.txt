@@ -1,16 +1,19 @@
 cmake_minimum_required(VERSION 3.10)
-
 project(yolov5)
 
 add_definitions(-std=c++17)
-
 option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(CUDA REQUIRED)
+file(GLOB ProjectSRC
+        "command_service/*.cc"
+        "config/*.cc"
+        "util/*.cc"
+        "*.cc")
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
-# include and link dirs of cuda and tensorrt, you need adapt them if yours are different
+message("")
+message("Operation system is ${CMAKE_SYSTEM}")
+
 # cuda
 include_directories(/usr/local/cuda/include)
 link_directories(/usr/local/cuda/lib64)
@@ -23,25 +26,22 @@ link_directories(/usr/local/lib)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Ofast -Wfatal-errors -D_MWAITXINTRIN_H_INCLUDED")
 
-cuda_add_library(myplugins SHARED ${PROJECT_SOURCE_DIR}/yololayer.cu)
-target_link_libraries(myplugins nvinfer cudart)
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+    ADD_DEFINITIONS(-DDEBUG)
+    message(STATUS "CMake Build Type: Debug")
+    message("")
+elseif (CMAKE_BUILD_TYPE STREQUAL Release)
+    message(STATUS "CMake Build Type: Release")
+    message("")
+endif ()
 
+find_package(CUDA REQUIRED)
 find_package(OpenCV)
 find_package(Threads REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-include_directories(/usr/local/include)
-link_directories(/usr/local/lib)
-
-IF (CMAKE_BUILD_TYPE STREQUAL Debug)
-    ADD_DEFINITIONS(-DDEBUG)
-ENDIF ()
+cuda_add_library(YoloLayerPlugin SHARED ${PROJECT_SOURCE_DIR}/yololayer.cu)
+target_link_libraries(YoloLayerPlugin nvinfer cudart)
 
 add_executable(yolov5 calibrator.cpp yolov5.cpp http/server.cc x_thread.cc)
-target_link_libraries(yolov5 nvinfer)
-target_link_libraries(yolov5 cudart)
-target_link_libraries(yolov5 myplugins)
-target_link_libraries(yolov5 ${OpenCV_LIBS})
-target_link_libraries(yolov5 jsoncpp)
-target_link_libraries(yolov5 event)
-target_link_libraries(yolov5 Threads::Threads)
+target_link_libraries(yolov5 nvinfer  cudart YoloLayerPlugin ${OpenCV_LIBS} jsoncpp event Threads::Threads)

@@ -656,7 +656,7 @@ int main(int argc, char **argv) {
   file.close();
 
   // open the camera
-  cv::VideoCapture capture(1);
+  cv::VideoCapture capture(0);
   if (!capture.isOpened()) {
     std::cout << "Failed to open camera." << std::endl;
     return -1;
@@ -671,86 +671,7 @@ int main(int argc, char **argv) {
   std::vector<cv::Scalar> colors_list = GetColors(CLASS_NUM);
 //  Json::Value id_name = LoadJsonInfo("../coco_id_name.json");
   std::vector<std::string> id_name = {
-      "person",
-      "bicycle",
-      "car",
-      "motorcycle",
-      "airplane",
-      "bus",
-      "train",
-      "truck",
-      "boat",
-      "traffic light",
-      "fire hydrant",
-      "stop sign",
-      "parking meter",
-      "bench",
-      "bird",
-      "cat",
-      "dog",
-      "horse",
-      "sheep",
-      "cow",
-      "elephant",
-      "bear",
-      "zebra",
-      "giraffe",
-      "backpack",
-      "umbrella",
-      "handbag",
-      "tie",
-      "suitcase",
-      "frisbee",
-      "skis",
-      "snowboard",
-      "sports ball",
-      "kite",
-      "baseball bat",
-      "baseball glove",
-      "skateboard",
-      "surfboard",
-      "tennis racket",
-      "bottle",
-      "wine glass",
-      "cup",
-      "fork",
-      "knife",
-      "spoon",
-      "bowl",
-      "banana",
-      "apple",
-      "sandwich",
-      "orange",
-      "broccoli",
-      "carrot",
-      "hot dog",
-      "pizza",
-      "donut",
-      "cake",
-      "chair",
-      "couch",
-      "potted plant",
-      "bed",
-      "dining table",
-      "toilet",
-      "tv",
-      "laptop",
-      "mouse",
-      "remote",
-      "keyboard",
-      "cell phone",
-      "microwave",
-      "oven",
-      "toaster",
-      "sink",
-      "refrigerator",
-      "book",
-      "clock",
-      "vase",
-      "scissors",
-      "teddy bear",
-      "hair drier",
-      "toothbrush"
+      "ball"
   };
   // ----------------------------------
 
@@ -780,7 +701,7 @@ int main(int argc, char **argv) {
   CUDA_CHECK(cudaStreamCreate(&stream));
 
   while (true) {
-    if (Server::Get()->IsDetect()) {
+    if (true) {
       cv::Mat img;
       capture >> img;
       if (img.empty()) {
@@ -791,6 +712,7 @@ int main(int argc, char **argv) {
 
       auto boxes = Inference(colors_list, id_name, data, prob, context, buffers, stream, img);
 
+      /*
       std::stringstream cv_mat_ss;
       cv_mat_ss << img;
 
@@ -804,6 +726,7 @@ int main(int argc, char **argv) {
       Server::Get()->Send(Api::Body{"127.0.0.1:9000/detectDone", "POST", js_obj.dump()});
 
       Server::Get()->SetDetect(false);
+       */
 
       cv::imshow("dst", img);
       if (cv::waitKey(1) == 'q') {
