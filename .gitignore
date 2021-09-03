@@ -1,3 +1,6 @@
-.idea
-res
+.idea/
+.vscode/
 cmake-build-*
+
+*.pt
+*.wts
