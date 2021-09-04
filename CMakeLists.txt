@@ -39,8 +39,8 @@ find_package(Threads REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 # 创建静态链接库，也可以生成静态的（SHARED）
-cuda_add_library(YoloLayerPlugin STATIC ${PROJECT_SOURCE_DIR}/yololayer.cu)
-target_link_libraries(YoloLayerPlugin nvinfer cudart)
+cuda_add_library(YoloLayer STATIC model/yololayer.cu)
+target_link_libraries(YoloLayer nvinfer cudart)
 
 add_executable(${PROJECT_NAME} ${ProjectSRC})
-target_link_libraries(${PROJECT_NAME} nvinfer cudart YoloLayerPlugin ${OpenCV_LIBS} Threads::Threads)
+target_link_libraries(${PROJECT_NAME} nvinfer cudart YoloLayer ${OpenCV_LIBS} Threads::Threads)

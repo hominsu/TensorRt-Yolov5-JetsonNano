@@ -7,14 +7,19 @@
 #include <opencv4/opencv2/opencv.hpp>
 
 #include "model/yolo_v_5.h"
-#include "gen_color.h"
-
-static const int CLASS_NUM = Yolo::CLASS_NUM;
+#include "model/gen_color.h"
 
 int main(int argc, char **argv) {
-  YoloV5::Get()->Start(argc, argv);
+  try {
+    YoloV5::Get()->ParseArgs(argc, argv);
+    YoloV5::Get()->GenEngine();
+    YoloV5::Get()->LoadEngine();
+  } catch (YoloException &_e) {
+    std::cerr << _e.what();
+    return -1;
+  }
 
-  YoloV5::Get()->Prepare();
+  YoloV5::Get()->PrepareInput();
 
   // open the camera
   cv::VideoCapture capture(0);
@@ -29,11 +34,14 @@ int main(int argc, char **argv) {
   cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
 
   // ----------------------------------
-  std::vector<cv::Scalar> colors_list = GetColors(CLASS_NUM);
+  std::vector<cv::Scalar> colors_list = GetColors(YoloV5::CLASS_NUM);
   std::vector<std::string> id_name = {
       "ball"
   };
   // ----------------------------------
+
+  float data[BATCH_SIZE * 3 * YoloV5::INPUT_H * YoloV5::INPUT_W];
+  float prob[BATCH_SIZE * YoloV5::OUTPUT_SIZE];
 
   while (true) {
     cv::Mat img;
@@ -42,15 +50,15 @@ int main(int argc, char **argv) {
       continue;
     }
 
-//    img = BGR2RGB(data, img);
-//
-//    Inference(colors_list, id_name, data, prob, context, buffers, stream, img);
-//
-//    cv::imshow("dst", img);
-//    if (cv::waitKey(1) == 'q') {
-//      cv::destroyAllWindows();
-//      break;
-//    }
+    img = YoloV5::BGR2RGB(data, img);
+
+    YoloV5::Get()->Inference(colors_list, id_name, data, prob, img);
+
+    cv::imshow("dst", img);
+    if (cv::waitKey(1) == 'q') {
+      cv::destroyAllWindows();
+      break;
+    }
   }
 
   capture.release();

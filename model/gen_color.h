@@ -1,5 +1,5 @@
-#ifndef YOLOV5_GEN_COLOR_H_
-#define YOLOV5_GEN_COLOR_H_
+#ifndef YOLOV5_MODEL_GEN_COLOR_H_
+#define YOLOV5_MODEL_GEN_COLOR_H_
 
 #include <opencv4/opencv2/opencv.hpp>
 #include <vector>
@@ -60,4 +60,4 @@ std::vector<cv::Scalar> GetColors(const int n) {
   return colors;
 }
 
-#endif //YOLOV5_GEN_COLOR_H_
+#endif //YOLOV5_MODEL_GEN_COLOR_H_

@@ -9,8 +9,9 @@
 
 #include <opencv4/opencv2/opencv.hpp>
 
-#include "../logging.h"
-#include "../yololayer.h"
+#include "logging.h"
+#include "yololayer.h"
+#include "yolo_exception.h"
 
 #define USE_FP16  // set USE_INT8 or USE_FP16 or USE_FP32
 #define DEVICE 0  // GPU id
@@ -22,6 +23,7 @@ class YoloV5 {
  public:
   static const int INPUT_H = Yolo::INPUT_H;
   static const int INPUT_W = Yolo::INPUT_W;
+  static const int CLASS_NUM = Yolo::CLASS_NUM;
   static const int OUTPUT_SIZE = Yolo::MAX_OUTPUT_BBOX_COUNT * sizeof(Yolo::Detection) / sizeof(float)
       + 1;  // we assume the yololayer outputs no more than MAX_OUTPUT_BBOX_COUNT boxes that conf >= 0.1
   const char *INPUT_BLOB_NAME = "data";
@@ -34,11 +36,10 @@ class YoloV5 {
   float gd_ = 0.0f;
   float gw_ = 0.0f;
 
+  bool is_prepared_ = false;
   long model_size_{};
-  char *trtModelStream_{};
+  char *trtModelStream_ = nullptr;
 
-  float *data_{};
-  float *prob_{};
   nvinfer1::IRuntime *runtime_{};
   nvinfer1::ICudaEngine *engine_{};
   nvinfer1::IExecutionContext *context_{};
@@ -59,29 +60,22 @@ class YoloV5 {
   YoloV5();
 
  public:
-  void Start(int argc, char **argv);
-  void Prepare();
-  inline void doInference(nvinfer1::IExecutionContext &context,
-                          cudaStream_t &stream,
-                          void **buffers,
-                          float *input,
-                          float *output,
-                          int batchSize);
+  void ParseArgs(int argc, char **argv);
+  void GenEngine();
+  void LoadEngine();
+  void PrepareInput();
+  static cv::Mat &BGR2RGB(float *data, cv::Mat &img);
   void Inference(const std::vector<cv::Scalar> &colors_list,
                  const std::vector<std::string> &id_name,
-                 float *data,
-                 float *prob,
-                 nvinfer1::IExecutionContext *context,
-                 void **buffers,
-                 cudaStream_t &stream,
+                 float *_data,
+                 float *_prob,
                  cv::Mat &img);
 
  private:
-  bool ParseArgs(int argc, char **argv);
+  bool Parse(int argc, char **argv);
   static inline int get_width(int x, float gw, int divisor = 8);
   static inline int get_depth(int x, float gd);
-  static inline cv::Mat &BGR2RGB(float *data, cv::Mat &img);
-
+  inline void doInference(float *input, float *output, int batchSize);
   nvinfer1::ICudaEngine *build_engine(unsigned int maxBatchSize,
                                       nvinfer1::IBuilder *builder,
                                       nvinfer1::IBuilderConfig *config,

@@ -1,5 +1,5 @@
-#ifndef YOLOV5_CALIBRATOR_H
-#define YOLOV5_CALIBRATOR_H
+#ifndef YOLOV5_MODEL_CALIBRATOR_H
+#define YOLOV5_MODEL_CALIBRATOR_H
 
 #include "NvInfer.h"
 #include <string>
@@ -41,4 +41,4 @@ class Int8EntropyCalibrator2 : public nvinfer1::IInt8EntropyCalibrator2 {
   std::vector<char> calib_cache_;
 };
 
-#endif // YOLOV5_CALIBRATOR_H
+#endif // YOLOV5_MODEL_CALIBRATOR_H

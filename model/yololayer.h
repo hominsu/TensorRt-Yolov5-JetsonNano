@@ -1,5 +1,5 @@
-#ifndef YOLOV5_YOLO_LAYER_H
-#define YOLOV5_YOLO_LAYER_H
+#ifndef YOLOV5_MODEL_YOLO_LAYER_H
+#define YOLOV5_MODEL_YOLO_LAYER_H
 
 #include <vector>
 #include <string>
@@ -15,7 +15,7 @@ struct YoloKernel {
 };
 static constexpr int MAX_OUTPUT_BBOX_COUNT = 1000;
 static constexpr int CLASS_NUM = 1;
-static constexpr int INPUT_H = 640;  // yolov5's input height and width must be divisible by 32.
+static constexpr int INPUT_H = 640;  // model's input height and width must be divisible by 32.
 static constexpr int INPUT_W = 640;
 
 static constexpr int LOCATIONS = 4;
@@ -82,8 +82,7 @@ class YoloLayerPlugin : public IPluginV2IOExt {
 
   bool canBroadcastInputAcrossBatch(int inputIndex) const override;
 
-  void attachToContext(
-      cudnnContext *cudnnContext, cublasContext *cublasContext, IGpuAllocator *gpuAllocator) override;
+  void attachToContext(cudnnContext *cudnnContext, cublasContext *cublasContext, IGpuAllocator *gpuAllocator) override;
 
   void configurePlugin(const PluginTensorDesc *in, int nbInput, const PluginTensorDesc *out, int nbOutput) override;
 
@@ -134,4 +133,4 @@ class YoloPluginCreator : public IPluginCreator {
 REGISTER_TENSORRT_PLUGIN(YoloPluginCreator);
 };
 
-#endif // YOLOV5_YOLO_LAYER_H
+#endif // YOLOV5_MODEL_YOLO_LAYER_H
