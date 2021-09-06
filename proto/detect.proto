@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package Detect;
+
+message BoxRect {
+  double x = 1;       // x 坐标
+  double y = 2;       // y 坐标
+  double width = 3;   // 宽度
+  double height = 4;  // 高度
+  double area = 5;    // 面积
+  int64 class_id = 6;    // 检测种类
+}
+
+message DetectRequest {
+  bool status = 1;
+}
+
+message CommonResponse {
+  BoxRect rect = 1;
+  bytes image = 2;
+}
+
+service DetectResultService {
+  rpc DetectedRect (DetectRequest) returns (CommonResponse) {};
+}
+
+// protoc --proto_path=./proto/ --grpc_out=./detect_service --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` detect.proto
+// protoc --proto_path=./proto/ --cpp_out=./detect_service detect.proto

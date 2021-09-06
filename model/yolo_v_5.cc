@@ -570,11 +570,11 @@ void YoloV5::doInference(float *input, float *output, int batchSize) {
   cudaStreamSynchronize(stream_);
 }
 
-void YoloV5::Inference(const std::vector<cv::Scalar> &colors_list,
-                       const std::vector<std::string> &id_name,
-                       float *_data,
-                       float *_prob,
-                       cv::Mat &img) {
+std::shared_ptr<std::vector<Box::Rect>> YoloV5::Inference(const std::vector<cv::Scalar> &colors_list,
+                                                          const std::vector<std::string> &id_name,
+                                                          float *_data,
+                                                          float *_prob,
+                                                          cv::Mat &img) {
   doInference(_data, _prob, BATCH_SIZE);
   std::vector<std::vector<Yolo::Detection>> batch_res(1);
   {
@@ -582,25 +582,31 @@ void YoloV5::Inference(const std::vector<cv::Scalar> &colors_list,
     nms(res, &_prob[0], CONF_THRESH, NMS_THRESH);
   }
   auto &res = batch_res[0];
-//  std::vector<Box::BoxRect> boxes;
+  auto boxes = std::make_shared<std::vector<Box::Rect>>();
+//  std::vector<Box::Rect> boxes;
   for (auto &re: res) {
+    const int id = static_cast<int>( re.class_id);
     cv::Rect r = get_rect(img, re.bbox);
-    cv::rectangle(img, r, colors_list[(int) re.class_id], 2);
+    cv::rectangle(img, r, colors_list[id], 2);
     cv::putText(img,
         //id_name[std::to_string(static_cast<int>( res[j].class_id))].asString() + " "
         //+ std::to_string(static_cast<int>(res[j].conf * 100)) + "%",
-                id_name[static_cast<int>( re.class_id)] + " "
+                id_name[id] + " "
                     + std::to_string(static_cast<int>(re.conf * 100)) + "%",
                 cv::Point(r.x, r.y - 1),
                 cv::FONT_HERSHEY_PLAIN,
                 1.2,
-                colors_list[(int) re.class_id],
+                colors_list[id],
                 2);
 
-//    cv::circle(img, Box::BoxRect(r).getMPoint(), 4, colors_list[static_cast<int>(re.class_id)], -1);
-//    boxes.emplace_back(r);
+    cv::circle(img,
+               Box::Rect(r, id).getMPoint(),
+               4,
+               colors_list[id],
+               -1);
+    boxes->emplace_back(r, id);
   }
-//  return boxes;
+  return boxes;
 }
 
 void YoloV5::ParseArgs(int argc, char **argv) {

@@ -52,7 +52,14 @@ int main(int argc, char **argv) {
 
     img = YoloV5::BGR2RGB(data, img);
 
-    YoloV5::Get()->Inference(colors_list, id_name, data, prob, img);
+    auto boxes = YoloV5::Get()->Inference(colors_list, id_name, data, prob, img);
+
+    if(!boxes->empty()){
+      for (const auto box: *boxes) {
+        std::cout << box.ToJson().dump() << std::endl;
+      }
+      std::cout << std::endl;
+    }
 
     cv::imshow("dst", img);
     if (cv::waitKey(1) == 'q') {

@@ -12,6 +12,7 @@
 #include "logging.h"
 #include "yololayer.h"
 #include "yolo_exception.h"
+#include "../defs/box.h"
 
 #define USE_FP16  // set USE_INT8 or USE_FP16 or USE_FP32
 #define DEVICE 0  // GPU id
@@ -65,11 +66,11 @@ class YoloV5 {
   void LoadEngine();
   void PrepareInput();
   static cv::Mat &BGR2RGB(float *data, cv::Mat &img);
-  void Inference(const std::vector<cv::Scalar> &colors_list,
-                 const std::vector<std::string> &id_name,
-                 float *_data,
-                 float *_prob,
-                 cv::Mat &img);
+  std::shared_ptr<std::vector<Box::Rect>> Inference(const std::vector<cv::Scalar> &colors_list,
+                                                    const std::vector<std::string> &id_name,
+                                                    float *_data,
+                                                    float *_prob,
+                                                    cv::Mat &img);
 
  private:
   bool Parse(int argc, char **argv);

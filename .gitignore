@@ -1,8 +1,7 @@
 .idea/
 .vscode/
 cmake-build-*
+cert/
 
 *.pt
 *.wts
-*.pb.cc
-*.pb.h

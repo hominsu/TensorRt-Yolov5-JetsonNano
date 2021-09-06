@@ -5,7 +5,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include "NvInfer.h"
 #include "yololayer.h"
 

@@ -25,6 +25,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include "macros.h"
 
 using Severity = nvinfer1::ILogger::Severity;
 
@@ -215,7 +216,7 @@ class Logger : public nvinfer1::ILogger {
   //! Note samples should not be calling this function directly; it will eventually go away once we eliminate the
   //! inheritance from nvinfer1::ILogger
   //!
-  void log(Severity severity, const char *msg) override {
+  void log(Severity severity, const char *msg) TRT_NOEXCEPT override {
     LogStreamConsumer(mReportableSeverity, severity) << "[TRT] " << std::string(msg) << std::endl;
   }
 
@@ -233,7 +234,7 @@ class Logger : public nvinfer1::ILogger {
   //!
   //! This object is an opaque handle to information used by the Logger to print test results.
   //! The sample must call Logger::defineTest() in order to obtain a TestAtom that can be used
-  //! with Logger::reportTest{ParseArgs,End}().
+  //! with Logger::reportTest{Start,End}().
   //!
   class TestAtom {
    public:
@@ -260,7 +261,7 @@ class Logger : public nvinfer1::ILogger {
   //!                  For example, "TensorRT.sample_googlenet"
   //! \param[in] cmdline The command line used to reproduce the test
   //
-  //! \return a TestAtom that can be used in Logger::reportTest{ParseArgs,End}().
+  //! \return a TestAtom that can be used in Logger::reportTest{Start,End}().
   //!
   static TestAtom defineTest(const std::string &name, const std::string &cmdline) {
     return TestAtom(false, name, cmdline);
@@ -274,7 +275,7 @@ class Logger : public nvinfer1::ILogger {
   //! \param[in] argc The number of command-line arguments
   //! \param[in] argv The array of command-line arguments (given as C strings)
   //!
-  //! \return a TestAtom that can be used in Logger::reportTest{ParseArgs,End}().
+  //! \return a TestAtom that can be used in Logger::reportTest{Start,End}().
   static TestAtom defineTest(const std::string &name, int argc, char const *const *argv) {
     auto cmdline = genCmdlineString(argc, argv);
     return defineTest(name, cmdline);
@@ -333,7 +334,7 @@ class Logger : public nvinfer1::ILogger {
 
  private:
   //!
-  //! \brief returns an appropriate string for prefixing a log message_ with the given severity
+  //! \brief returns an appropriate string for prefixing a log message with the given severity
   //!
   static const char *severityPrefix(Severity severity) {
     switch (severity) {
@@ -348,7 +349,7 @@ class Logger : public nvinfer1::ILogger {
   }
 
   //!
-  //! \brief returns an appropriate string for prefixing a test result message_ with the given result
+  //! \brief returns an appropriate string for prefixing a test result message with the given result
   //!
   static const char *testResultString(TestResult result) {
     switch (result) {
