@@ -4,3 +4,5 @@ cmake-build-*
 
 *.pt
 *.wts
+*.pb.cc
+*.pb.h
