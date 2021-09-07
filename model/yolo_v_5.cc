@@ -636,7 +636,7 @@ void YoloV5::GenEngine() {
     p.write(reinterpret_cast<const char *>(modelStream->data()), static_cast<long>(modelStream->size()));
 
     modelStream->destroy();
-    throw YoloException("Save Engine ...\n");
+    throw YoloQuit("Save Engine ...\n");
   }
 }
 

@@ -37,17 +37,21 @@ find_package(Protobuf REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
+
+# 提示 grpc 版本不对，有两种方法：
+#   1. 重新生成将文件覆盖 detect_service 下的文件
+#   2. 删除 detect_service 下的 *.pb.cc, *.pb.h，然后取消下面的多行注释，修改对应的 include 路径，使用 cmake --build 命令，
+#      会自动生成 *.pb.cc, *.pb.h，导入项目中编译
 #[[
 # Proto file
 get_filename_component(hw_proto "./proto/detect.proto" ABSOLUTE)
 get_filename_component(hw_proto_path "${hw_proto}" PATH)
 
-message("Pos: [${CMAKE_CURRENT_BINARY_DIR}]")
 # Generated sources
-set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/detect.pb.cc")
-set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/detect.pb.h")
-set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/detect.grpc.pb.cc")
-set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/detect.grpc.pb.h")
+set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/detect_service/detect.pb.cc")
+set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/detect_service/detect.pb.h")
+set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/detect_service/detect.grpc.pb.cc")
+set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/detect_service/detect.grpc.pb.h")
 add_custom_command(
         OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
         COMMAND ${_PROTOBUF_PROTOC}
@@ -71,7 +75,9 @@ add_library(hw_grpc_proto
 
 file(GLOB ProjectSRC
         "detect_service/*.cc"
+        "config/*.cc"
         "model/*.cc"
+        "util/*.cc"
         "*.cc")
 
 # 创建静态链接库，也可以生成动态的（SHARED）
@@ -79,4 +85,5 @@ cuda_add_library(YoloLayer STATIC model/yololayer.cu)
 target_link_libraries(YoloLayer nvinfer cudart)
 
 add_executable(${PROJECT_NAME} ${ProjectSRC})
-target_link_libraries(${PROJECT_NAME} nvinfer cudart YoloLayer ${hw_grpc_proto} ${OpenCV_LIBS} Threads::Threads gRPC::grpc++)
+# ${hw_grpc_proto}
+target_link_libraries(${PROJECT_NAME} nvinfer cudart YoloLayer ${OpenCV_LIBS} Threads::Threads gRPC::grpc++)

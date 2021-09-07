@@ -35,41 +35,41 @@ class DetectResultService final {
   class StubInterface {
    public:
     virtual ~StubInterface() {}
-    virtual ::grpc::Status DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::Detect::CommonResponse* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Detect::CommonResponse>> AsyncDetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Detect::CommonResponse>>(AsyncDetectedRectRaw(context, request, cq));
+    virtual ::grpc::Status DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::Detect::DetectResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Detect::DetectResponse>> AsyncDetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Detect::DetectResponse>>(AsyncDetectedRectRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Detect::CommonResponse>> PrepareAsyncDetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Detect::CommonResponse>>(PrepareAsyncDetectedRectRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Detect::DetectResponse>> PrepareAsyncDetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::Detect::DetectResponse>>(PrepareAsyncDetectedRectRaw(context, request, cq));
     }
     class async_interface {
      public:
       virtual ~async_interface() {}
-      virtual void DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response, std::function<void(::grpc::Status)>) = 0;
-      virtual void DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
     };
     typedef class async_interface experimental_async_interface;
     virtual class async_interface* async() { return nullptr; }
     class async_interface* experimental_async() { return async(); }
    private:
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::Detect::CommonResponse>* AsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::Detect::CommonResponse>* PrepareAsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::Detect::DetectResponse>* AsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::Detect::DetectResponse>* PrepareAsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
     Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
-    ::grpc::Status DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::Detect::CommonResponse* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Detect::CommonResponse>> AsyncDetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Detect::CommonResponse>>(AsyncDetectedRectRaw(context, request, cq));
+    ::grpc::Status DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::Detect::DetectResponse* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Detect::DetectResponse>> AsyncDetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Detect::DetectResponse>>(AsyncDetectedRectRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Detect::CommonResponse>> PrepareAsyncDetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Detect::CommonResponse>>(PrepareAsyncDetectedRectRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Detect::DetectResponse>> PrepareAsyncDetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::Detect::DetectResponse>>(PrepareAsyncDetectedRectRaw(context, request, cq));
     }
     class async final :
       public StubInterface::async_interface {
      public:
-      void DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response, std::function<void(::grpc::Status)>) override;
-      void DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response, std::function<void(::grpc::Status)>) override;
+      void DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
      private:
       friend class Stub;
       explicit async(Stub* stub): stub_(stub) { }
@@ -81,8 +81,8 @@ class DetectResultService final {
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
     class async async_stub_{this};
-    ::grpc::ClientAsyncResponseReader< ::Detect::CommonResponse>* AsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::Detect::CommonResponse>* PrepareAsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::Detect::DetectResponse>* AsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::Detect::DetectResponse>* PrepareAsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_DetectedRect_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
@@ -91,7 +91,7 @@ class DetectResultService final {
    public:
     Service();
     virtual ~Service();
-    virtual ::grpc::Status DetectedRect(::grpc::ServerContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response);
+    virtual ::grpc::Status DetectedRect(::grpc::ServerContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_DetectedRect : public BaseClass {
@@ -105,11 +105,11 @@ class DetectResultService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::CommonResponse* /*response*/) override {
+    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::DetectResponse* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestDetectedRect(::grpc::ServerContext* context, ::Detect::DetectRequest* request, ::grpc::ServerAsyncResponseWriter< ::Detect::CommonResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestDetectedRect(::grpc::ServerContext* context, ::Detect::DetectRequest* request, ::grpc::ServerAsyncResponseWriter< ::Detect::DetectResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
@@ -121,25 +121,25 @@ class DetectResultService final {
    public:
     WithCallbackMethod_DetectedRect() {
       ::grpc::Service::MarkMethodCallback(0,
-          new ::grpc::internal::CallbackUnaryHandler< ::Detect::DetectRequest, ::Detect::CommonResponse>(
+          new ::grpc::internal::CallbackUnaryHandler< ::Detect::DetectRequest, ::Detect::DetectResponse>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response) { return this->DetectedRect(context, request, response); }));}
+                   ::grpc::CallbackServerContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response) { return this->DetectedRect(context, request, response); }));}
     void SetMessageAllocatorFor_DetectedRect(
-        ::grpc::MessageAllocator< ::Detect::DetectRequest, ::Detect::CommonResponse>* allocator) {
+        ::grpc::MessageAllocator< ::Detect::DetectRequest, ::Detect::DetectResponse>* allocator) {
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(0);
-      static_cast<::grpc::internal::CallbackUnaryHandler< ::Detect::DetectRequest, ::Detect::CommonResponse>*>(handler)
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::Detect::DetectRequest, ::Detect::DetectResponse>*>(handler)
               ->SetMessageAllocator(allocator);
     }
     ~WithCallbackMethod_DetectedRect() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::CommonResponse* /*response*/) override {
+    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::DetectResponse* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     virtual ::grpc::ServerUnaryReactor* DetectedRect(
-      ::grpc::CallbackServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::CommonResponse* /*response*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::DetectResponse* /*response*/)  { return nullptr; }
   };
   typedef WithCallbackMethod_DetectedRect<Service > CallbackService;
   typedef CallbackService ExperimentalCallbackService;
@@ -155,7 +155,7 @@ class DetectResultService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::CommonResponse* /*response*/) override {
+    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::DetectResponse* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -172,7 +172,7 @@ class DetectResultService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::CommonResponse* /*response*/) override {
+    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::DetectResponse* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -195,7 +195,7 @@ class DetectResultService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::CommonResponse* /*response*/) override {
+    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::DetectResponse* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -210,10 +210,10 @@ class DetectResultService final {
     WithStreamedUnaryMethod_DetectedRect() {
       ::grpc::Service::MarkMethodStreamed(0,
         new ::grpc::internal::StreamedUnaryHandler<
-          ::Detect::DetectRequest, ::Detect::CommonResponse>(
+          ::Detect::DetectRequest, ::Detect::DetectResponse>(
             [this](::grpc::ServerContext* context,
                    ::grpc::ServerUnaryStreamer<
-                     ::Detect::DetectRequest, ::Detect::CommonResponse>* streamer) {
+                     ::Detect::DetectRequest, ::Detect::DetectResponse>* streamer) {
                        return this->StreamedDetectedRect(context,
                          streamer);
                   }));
@@ -222,12 +222,12 @@ class DetectResultService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::CommonResponse* /*response*/) override {
+    ::grpc::Status DetectedRect(::grpc::ServerContext* /*context*/, const ::Detect::DetectRequest* /*request*/, ::Detect::DetectResponse* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedDetectedRect(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::Detect::DetectRequest,::Detect::CommonResponse>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedDetectedRect(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::Detect::DetectRequest,::Detect::DetectResponse>* server_unary_streamer) = 0;
   };
   typedef WithStreamedUnaryMethod_DetectedRect<Service > StreamedUnaryService;
   typedef Service SplitStreamedService;

@@ -15,13 +15,14 @@ message DetectRequest {
   bool status = 1;
 }
 
-message CommonResponse {
-  BoxRect rect = 1;
-  bytes image = 2;
+message DetectResponse {
+  bool status = 1;
+  repeated BoxRect rect = 2;
+  bytes image = 3;
 }
 
 service DetectResultService {
-  rpc DetectedRect (DetectRequest) returns (CommonResponse) {};
+  rpc DetectedRect (DetectRequest) returns (DetectResponse) {};
 }
 
 // protoc --proto_path=./proto/ --grpc_out=./detect_service --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` detect.proto

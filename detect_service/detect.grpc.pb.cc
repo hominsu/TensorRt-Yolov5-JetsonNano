@@ -35,23 +35,23 @@ DetectResultService::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>
   : channel_(channel), rpcmethod_DetectedRect_(DetectResultService_method_names[0], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
-::grpc::Status DetectResultService::Stub::DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::Detect::CommonResponse* response) {
-  return ::grpc::internal::BlockingUnaryCall< ::Detect::DetectRequest, ::Detect::CommonResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_DetectedRect_, context, request, response);
+::grpc::Status DetectResultService::Stub::DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::Detect::DetectResponse* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::Detect::DetectRequest, ::Detect::DetectResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_DetectedRect_, context, request, response);
 }
 
-void DetectResultService::Stub::async::DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response, std::function<void(::grpc::Status)> f) {
-  ::grpc::internal::CallbackUnaryCall< ::Detect::DetectRequest, ::Detect::CommonResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_DetectedRect_, context, request, response, std::move(f));
+void DetectResultService::Stub::async::DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::Detect::DetectRequest, ::Detect::DetectResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_DetectedRect_, context, request, response, std::move(f));
 }
 
-void DetectResultService::Stub::async::DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response, ::grpc::ClientUnaryReactor* reactor) {
+void DetectResultService::Stub::async::DetectedRect(::grpc::ClientContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response, ::grpc::ClientUnaryReactor* reactor) {
   ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_DetectedRect_, context, request, response, reactor);
 }
 
-::grpc::ClientAsyncResponseReader< ::Detect::CommonResponse>* DetectResultService::Stub::PrepareAsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::Detect::CommonResponse, ::Detect::DetectRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_DetectedRect_, context, request);
+::grpc::ClientAsyncResponseReader< ::Detect::DetectResponse>* DetectResultService::Stub::PrepareAsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::Detect::DetectResponse, ::Detect::DetectRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_DetectedRect_, context, request);
 }
 
-::grpc::ClientAsyncResponseReader< ::Detect::CommonResponse>* DetectResultService::Stub::AsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
+::grpc::ClientAsyncResponseReader< ::Detect::DetectResponse>* DetectResultService::Stub::AsyncDetectedRectRaw(::grpc::ClientContext* context, const ::Detect::DetectRequest& request, ::grpc::CompletionQueue* cq) {
   auto* result =
     this->PrepareAsyncDetectedRectRaw(context, request, cq);
   result->StartCall();
@@ -62,11 +62,11 @@ DetectResultService::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       DetectResultService_method_names[0],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
-      new ::grpc::internal::RpcMethodHandler< DetectResultService::Service, ::Detect::DetectRequest, ::Detect::CommonResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+      new ::grpc::internal::RpcMethodHandler< DetectResultService::Service, ::Detect::DetectRequest, ::Detect::DetectResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](DetectResultService::Service* service,
              ::grpc::ServerContext* ctx,
              const ::Detect::DetectRequest* req,
-             ::Detect::CommonResponse* resp) {
+             ::Detect::DetectResponse* resp) {
                return service->DetectedRect(ctx, req, resp);
              }, this)));
 }
@@ -74,7 +74,7 @@ DetectResultService::Service::Service() {
 DetectResultService::Service::~Service() {
 }
 
-::grpc::Status DetectResultService::Service::DetectedRect(::grpc::ServerContext* context, const ::Detect::DetectRequest* request, ::Detect::CommonResponse* response) {
+::grpc::Status DetectResultService::Service::DetectedRect(::grpc::ServerContext* context, const ::Detect::DetectRequest* request, ::Detect::DetectResponse* response) {
   (void) context;
   (void) request;
   (void) response;

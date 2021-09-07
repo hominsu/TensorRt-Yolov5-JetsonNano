@@ -58,17 +58,17 @@ namespace Detect {
 class BoxRect;
 struct BoxRectDefaultTypeInternal;
 extern BoxRectDefaultTypeInternal _BoxRect_default_instance_;
-class CommonResponse;
-struct CommonResponseDefaultTypeInternal;
-extern CommonResponseDefaultTypeInternal _CommonResponse_default_instance_;
 class DetectRequest;
 struct DetectRequestDefaultTypeInternal;
 extern DetectRequestDefaultTypeInternal _DetectRequest_default_instance_;
+class DetectResponse;
+struct DetectResponseDefaultTypeInternal;
+extern DetectResponseDefaultTypeInternal _DetectResponse_default_instance_;
 }  // namespace Detect
 PROTOBUF_NAMESPACE_OPEN
 template<> ::Detect::BoxRect* Arena::CreateMaybeMessage<::Detect::BoxRect>(Arena*);
-template<> ::Detect::CommonResponse* Arena::CreateMaybeMessage<::Detect::CommonResponse>(Arena*);
 template<> ::Detect::DetectRequest* Arena::CreateMaybeMessage<::Detect::DetectRequest>(Arena*);
+template<> ::Detect::DetectResponse* Arena::CreateMaybeMessage<::Detect::DetectResponse>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace Detect {
 
@@ -379,42 +379,16 @@ class DetectRequest PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kImageFieldNumber = 2,
-    kRectFieldNumber = 1,
+    kStatusFieldNumber = 1,
   };
-  // bytes image = 2;
-  void clear_image();
-  const std::string& image() const;
-  void set_image(const std::string& value);
-  void set_image(std::string&& value);
-  void set_image(const char* value);
-  void set_image(const void* value, size_t size);
-  std::string* mutable_image();
-  std::string* release_image();
-  void set_allocated_image(std::string* image);
+  // bool status = 1;
+  void clear_status();
+  bool status() const;
+  void set_status(bool value);
   private:
-  const std::string& _internal_image() const;
-  void _internal_set_image(const std::string& value);
-  std::string* _internal_mutable_image();
+  bool _internal_status() const;
+  void _internal_set_status(bool value);
   public:
-
-  // .Detect.BoxRect rect = 1;
-  bool has_rect() const;
-  private:
-  bool _internal_has_rect() const;
-  public:
-  void clear_rect();
-  const ::Detect::BoxRect& rect() const;
-  ::Detect::BoxRect* release_rect();
-  ::Detect::BoxRect* mutable_rect();
-  void set_allocated_rect(::Detect::BoxRect* rect);
-  private:
-  const ::Detect::BoxRect& _internal_rect() const;
-  ::Detect::BoxRect* _internal_mutable_rect();
-  public:
-  void unsafe_arena_set_allocated_rect(
-      ::Detect::BoxRect* rect);
-  ::Detect::BoxRect* unsafe_arena_release_rect();
 
   // @@protoc_insertion_point(class_scope:Detect.DetectRequest)
  private:
@@ -423,31 +397,30 @@ class DetectRequest PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr image_;
-  ::Detect::BoxRect* rect_;
+  bool status_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_detect_2eproto;
 };
 // -------------------------------------------------------------------
 
-class CommonResponse PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Detect.CommonResponse) */ {
+class DetectResponse PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Detect.DetectResponse) */ {
  public:
-  inline CommonResponse() : CommonResponse(nullptr) {}
-  virtual ~CommonResponse();
-  explicit constexpr CommonResponse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  inline DetectResponse() : DetectResponse(nullptr) {}
+  virtual ~DetectResponse();
+  explicit constexpr DetectResponse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
-  CommonResponse(const CommonResponse& from);
-  CommonResponse(CommonResponse&& from) noexcept
-    : CommonResponse() {
+  DetectResponse(const DetectResponse& from);
+  DetectResponse(DetectResponse&& from) noexcept
+    : DetectResponse() {
     *this = ::std::move(from);
   }
 
-  inline CommonResponse& operator=(const CommonResponse& from) {
+  inline DetectResponse& operator=(const DetectResponse& from) {
     CopyFrom(from);
     return *this;
   }
-  inline CommonResponse& operator=(CommonResponse&& from) noexcept {
+  inline DetectResponse& operator=(DetectResponse&& from) noexcept {
     if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -465,20 +438,20 @@ class CommonResponse PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const CommonResponse& default_instance() {
+  static const DetectResponse& default_instance() {
     return *internal_default_instance();
   }
-  static inline const CommonResponse* internal_default_instance() {
-    return reinterpret_cast<const CommonResponse*>(
-               &_CommonResponse_default_instance_);
+  static inline const DetectResponse* internal_default_instance() {
+    return reinterpret_cast<const DetectResponse*>(
+               &_DetectResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     2;
 
-  friend void swap(CommonResponse& a, CommonResponse& b) {
+  friend void swap(DetectResponse& a, DetectResponse& b) {
     a.Swap(&b);
   }
-  inline void Swap(CommonResponse* other) {
+  inline void Swap(DetectResponse* other) {
     if (other == this) return;
     if (GetArena() == other->GetArena()) {
       InternalSwap(other);
@@ -486,7 +459,7 @@ class CommonResponse PROTOBUF_FINAL :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(CommonResponse* other) {
+  void UnsafeArenaSwap(DetectResponse* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -494,17 +467,17 @@ class CommonResponse PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline CommonResponse* New() const final {
-    return CreateMaybeMessage<CommonResponse>(nullptr);
+  inline DetectResponse* New() const final {
+    return CreateMaybeMessage<DetectResponse>(nullptr);
   }
 
-  CommonResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<CommonResponse>(arena);
+  DetectResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<DetectResponse>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const CommonResponse& from);
-  void MergeFrom(const CommonResponse& from);
+  void CopyFrom(const DetectResponse& from);
+  void MergeFrom(const DetectResponse& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -518,13 +491,13 @@ class CommonResponse PROTOBUF_FINAL :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(CommonResponse* other);
+  void InternalSwap(DetectResponse* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "Detect.CommonResponse";
+    return "Detect.DetectResponse";
   }
   protected:
-  explicit CommonResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit DetectResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -543,8 +516,44 @@ class CommonResponse PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
+    kRectFieldNumber = 2,
+    kImageFieldNumber = 3,
     kStatusFieldNumber = 1,
   };
+  // repeated .Detect.BoxRect rect = 2;
+  int rect_size() const;
+  private:
+  int _internal_rect_size() const;
+  public:
+  void clear_rect();
+  ::Detect::BoxRect* mutable_rect(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Detect::BoxRect >*
+      mutable_rect();
+  private:
+  const ::Detect::BoxRect& _internal_rect(int index) const;
+  ::Detect::BoxRect* _internal_add_rect();
+  public:
+  const ::Detect::BoxRect& rect(int index) const;
+  ::Detect::BoxRect* add_rect();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Detect::BoxRect >&
+      rect() const;
+
+  // bytes image = 3;
+  void clear_image();
+  const std::string& image() const;
+  void set_image(const std::string& value);
+  void set_image(std::string&& value);
+  void set_image(const char* value);
+  void set_image(const void* value, size_t size);
+  std::string* mutable_image();
+  std::string* release_image();
+  void set_allocated_image(std::string* image);
+  private:
+  const std::string& _internal_image() const;
+  void _internal_set_image(const std::string& value);
+  std::string* _internal_mutable_image();
+  public:
+
   // bool status = 1;
   void clear_status();
   bool status() const;
@@ -554,13 +563,15 @@ class CommonResponse PROTOBUF_FINAL :
   void _internal_set_status(bool value);
   public:
 
-  // @@protoc_insertion_point(class_scope:Detect.CommonResponse)
+  // @@protoc_insertion_point(class_scope:Detect.DetectResponse)
  private:
   class _Internal;
 
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Detect::BoxRect > rect_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr image_;
   bool status_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_detect_2eproto;
@@ -700,140 +711,140 @@ inline void BoxRect::set_class_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
 
 // DetectRequest
 
-// .Detect.BoxRect rect = 1;
-inline bool DetectRequest::_internal_has_rect() const {
-  return this != internal_default_instance() && rect_ != nullptr;
+// bool status = 1;
+inline void DetectRequest::clear_status() {
+  status_ = false;
 }
-inline bool DetectRequest::has_rect() const {
-  return _internal_has_rect();
+inline bool DetectRequest::_internal_status() const {
+  return status_;
 }
-inline void DetectRequest::clear_rect() {
-  if (GetArena() == nullptr && rect_ != nullptr) {
-    delete rect_;
-  }
-  rect_ = nullptr;
+inline bool DetectRequest::status() const {
+  // @@protoc_insertion_point(field_get:Detect.DetectRequest.status)
+  return _internal_status();
 }
-inline const ::Detect::BoxRect& DetectRequest::_internal_rect() const {
-  const ::Detect::BoxRect* p = rect_;
-  return p != nullptr ? *p : reinterpret_cast<const ::Detect::BoxRect&>(
-      ::Detect::_BoxRect_default_instance_);
-}
-inline const ::Detect::BoxRect& DetectRequest::rect() const {
-  // @@protoc_insertion_point(field_get:Detect.DetectRequest.rect)
-  return _internal_rect();
-}
-inline void DetectRequest::unsafe_arena_set_allocated_rect(
-    ::Detect::BoxRect* rect) {
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(rect_);
-  }
-  rect_ = rect;
-  if (rect) {
-    
-  } else {
-    
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Detect.DetectRequest.rect)
-}
-inline ::Detect::BoxRect* DetectRequest::release_rect() {
+inline void DetectRequest::_internal_set_status(bool value) {
   
-  ::Detect::BoxRect* temp = rect_;
-  rect_ = nullptr;
-  if (GetArena() != nullptr) {
-    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-  }
-  return temp;
+  status_ = value;
 }
-inline ::Detect::BoxRect* DetectRequest::unsafe_arena_release_rect() {
-  // @@protoc_insertion_point(field_release:Detect.DetectRequest.rect)
-  
-  ::Detect::BoxRect* temp = rect_;
-  rect_ = nullptr;
-  return temp;
-}
-inline ::Detect::BoxRect* DetectRequest::_internal_mutable_rect() {
-  
-  if (rect_ == nullptr) {
-    auto* p = CreateMaybeMessage<::Detect::BoxRect>(GetArena());
-    rect_ = p;
-  }
-  return rect_;
-}
-inline ::Detect::BoxRect* DetectRequest::mutable_rect() {
-  // @@protoc_insertion_point(field_mutable:Detect.DetectRequest.rect)
-  return _internal_mutable_rect();
-}
-inline void DetectRequest::set_allocated_rect(::Detect::BoxRect* rect) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
-  if (message_arena == nullptr) {
-    delete rect_;
-  }
-  if (rect) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(rect);
-    if (message_arena != submessage_arena) {
-      rect = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, rect, submessage_arena);
-    }
-    
-  } else {
-    
-  }
-  rect_ = rect;
-  // @@protoc_insertion_point(field_set_allocated:Detect.DetectRequest.rect)
+inline void DetectRequest::set_status(bool value) {
+  _internal_set_status(value);
+  // @@protoc_insertion_point(field_set:Detect.DetectRequest.status)
 }
 
-// bytes image = 2;
-inline void DetectRequest::clear_image() {
+// -------------------------------------------------------------------
+
+// DetectResponse
+
+// bool status = 1;
+inline void DetectResponse::clear_status() {
+  status_ = false;
+}
+inline bool DetectResponse::_internal_status() const {
+  return status_;
+}
+inline bool DetectResponse::status() const {
+  // @@protoc_insertion_point(field_get:Detect.DetectResponse.status)
+  return _internal_status();
+}
+inline void DetectResponse::_internal_set_status(bool value) {
+  
+  status_ = value;
+}
+inline void DetectResponse::set_status(bool value) {
+  _internal_set_status(value);
+  // @@protoc_insertion_point(field_set:Detect.DetectResponse.status)
+}
+
+// repeated .Detect.BoxRect rect = 2;
+inline int DetectResponse::_internal_rect_size() const {
+  return rect_.size();
+}
+inline int DetectResponse::rect_size() const {
+  return _internal_rect_size();
+}
+inline void DetectResponse::clear_rect() {
+  rect_.Clear();
+}
+inline ::Detect::BoxRect* DetectResponse::mutable_rect(int index) {
+  // @@protoc_insertion_point(field_mutable:Detect.DetectResponse.rect)
+  return rect_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Detect::BoxRect >*
+DetectResponse::mutable_rect() {
+  // @@protoc_insertion_point(field_mutable_list:Detect.DetectResponse.rect)
+  return &rect_;
+}
+inline const ::Detect::BoxRect& DetectResponse::_internal_rect(int index) const {
+  return rect_.Get(index);
+}
+inline const ::Detect::BoxRect& DetectResponse::rect(int index) const {
+  // @@protoc_insertion_point(field_get:Detect.DetectResponse.rect)
+  return _internal_rect(index);
+}
+inline ::Detect::BoxRect* DetectResponse::_internal_add_rect() {
+  return rect_.Add();
+}
+inline ::Detect::BoxRect* DetectResponse::add_rect() {
+  // @@protoc_insertion_point(field_add:Detect.DetectResponse.rect)
+  return _internal_add_rect();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Detect::BoxRect >&
+DetectResponse::rect() const {
+  // @@protoc_insertion_point(field_list:Detect.DetectResponse.rect)
+  return rect_;
+}
+
+// bytes image = 3;
+inline void DetectResponse::clear_image() {
   image_.ClearToEmpty();
 }
-inline const std::string& DetectRequest::image() const {
-  // @@protoc_insertion_point(field_get:Detect.DetectRequest.image)
+inline const std::string& DetectResponse::image() const {
+  // @@protoc_insertion_point(field_get:Detect.DetectResponse.image)
   return _internal_image();
 }
-inline void DetectRequest::set_image(const std::string& value) {
+inline void DetectResponse::set_image(const std::string& value) {
   _internal_set_image(value);
-  // @@protoc_insertion_point(field_set:Detect.DetectRequest.image)
+  // @@protoc_insertion_point(field_set:Detect.DetectResponse.image)
 }
-inline std::string* DetectRequest::mutable_image() {
-  // @@protoc_insertion_point(field_mutable:Detect.DetectRequest.image)
+inline std::string* DetectResponse::mutable_image() {
+  // @@protoc_insertion_point(field_mutable:Detect.DetectResponse.image)
   return _internal_mutable_image();
 }
-inline const std::string& DetectRequest::_internal_image() const {
+inline const std::string& DetectResponse::_internal_image() const {
   return image_.Get();
 }
-inline void DetectRequest::_internal_set_image(const std::string& value) {
+inline void DetectResponse::_internal_set_image(const std::string& value) {
   
   image_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
-inline void DetectRequest::set_image(std::string&& value) {
+inline void DetectResponse::set_image(std::string&& value) {
   
   image_.Set(
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:Detect.DetectRequest.image)
+  // @@protoc_insertion_point(field_set_rvalue:Detect.DetectResponse.image)
 }
-inline void DetectRequest::set_image(const char* value) {
+inline void DetectResponse::set_image(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
   image_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:Detect.DetectRequest.image)
+  // @@protoc_insertion_point(field_set_char:Detect.DetectResponse.image)
 }
-inline void DetectRequest::set_image(const void* value,
+inline void DetectResponse::set_image(const void* value,
     size_t size) {
   
   image_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:Detect.DetectRequest.image)
+  // @@protoc_insertion_point(field_set_pointer:Detect.DetectResponse.image)
 }
-inline std::string* DetectRequest::_internal_mutable_image() {
+inline std::string* DetectResponse::_internal_mutable_image() {
   
   return image_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
-inline std::string* DetectRequest::release_image() {
-  // @@protoc_insertion_point(field_release:Detect.DetectRequest.image)
+inline std::string* DetectResponse::release_image() {
+  // @@protoc_insertion_point(field_release:Detect.DetectResponse.image)
   return image_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline void DetectRequest::set_allocated_image(std::string* image) {
+inline void DetectResponse::set_allocated_image(std::string* image) {
   if (image != nullptr) {
     
   } else {
@@ -841,31 +852,7 @@ inline void DetectRequest::set_allocated_image(std::string* image) {
   }
   image_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), image,
       GetArena());
-  // @@protoc_insertion_point(field_set_allocated:Detect.DetectRequest.image)
-}
-
-// -------------------------------------------------------------------
-
-// CommonResponse
-
-// bool status = 1;
-inline void CommonResponse::clear_status() {
-  status_ = false;
-}
-inline bool CommonResponse::_internal_status() const {
-  return status_;
-}
-inline bool CommonResponse::status() const {
-  // @@protoc_insertion_point(field_get:Detect.CommonResponse.status)
-  return _internal_status();
-}
-inline void CommonResponse::_internal_set_status(bool value) {
-  
-  status_ = value;
-}
-inline void CommonResponse::set_status(bool value) {
-  _internal_set_status(value);
-  // @@protoc_insertion_point(field_set:Detect.CommonResponse.status)
+  // @@protoc_insertion_point(field_set_allocated:Detect.DetectResponse.image)
 }
 
 #ifdef __GNUC__
