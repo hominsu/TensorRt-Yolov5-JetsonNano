@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package Detect;
+
+option go_package = "/detect_service;Detect";
+
+message BoxRect {
+  double x = 1;       // x 坐标
+  double y = 2;       // y 坐标
+  double width = 3;   // 宽度
+  double height = 4;  // 高度
+  double area = 5;    // 面积
+  int64 class_id = 6;    // 检测种类
+}
+
+message DetectRequest {
+  bool status = 1;
+}
+
+message DetectResponse {
+  bool status = 1;
+  repeated BoxRect rect = 2;
+  bytes image = 3;
+}
+
+service DetectResultService {
+  rpc DetectedRect (DetectRequest) returns (DetectResponse) {};
+}
+
+// protoc --proto_path=proto/ --go_out=./ --go-grpc_out=./ ./proto/detect.proto
