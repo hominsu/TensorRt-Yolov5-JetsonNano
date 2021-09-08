@@ -4,7 +4,7 @@
 
 #include "detect_service_server.h"
 #include "detect_service_impl.h"
-#include "../util/get_cred.h"
+#include "../utils/get_cred.h"
 
 void DetectServiceServer::Stop() {
   std::function<void()> func = [this]() {

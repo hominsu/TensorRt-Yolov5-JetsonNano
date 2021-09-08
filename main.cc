@@ -5,7 +5,6 @@
 #include <thread>
 #include <mutex>
 #include <csignal>
-#include <sys/signalfd.h>
 
 #include <opencv4/opencv2/opencv.hpp>
 
@@ -14,8 +13,10 @@
 #include "detect_service/detect_service_server.h"
 #include "config/config.h"
 
+bool is_running = true;
+
 // cv::Mat 2 std::string，也可以通过 stringstream 将 cv::Mat 流转换为字符流
-// 但是以下方法操作，直接操作内存，快
+// 但是以下方法，直接操作内存，快
 // TODO: 有没有更优雅的方法？
 inline std::string Mat2String(const cv::Mat &img) {
   std::string imag_str;
@@ -26,20 +27,16 @@ inline std::string Mat2String(const cv::Mat &img) {
   return imag_str;
 }
 
+void OnSignal(int) {
+  is_running = false;
+}
+
 int main(int argc, char **argv) {
-  sigset_t mask;  // 掩码
-  sigemptyset(&mask); // 清空掩码
 
-  // 添加信号量到掩码
-  sigaddset(&mask, SIGINT);
-  sigaddset(&mask, SIGQUIT);
-  sigaddset(&mask, SIGTERM);
-
-  // 设置该进程为对应的信号集的内容（当前已经的信号集合做并集、交集、覆盖）
-  sigprocmask(SIG_BLOCK, &mask, nullptr);
-
-  // 创建 signalfd 句柄，绑定信号
-  auto signal_fd = signalfd(-1, &mask, 0);
+  // 触发下面的信号就退出
+  signal(SIGINT, OnSignal);
+  signal(SIGQUIT, OnSignal);
+  signal(SIGTERM, OnSignal);
 
   // 处理 Parse、Gen engine、Load engine 的 Exception
   try {
@@ -101,14 +98,14 @@ int main(int argc, char **argv) {
     // 转换
     img = YoloV5::BGR2RGB(data, img);
 
-    // 推导（向神经网络传播数据）
+    // 向前推导
     auto boxes = YoloV5::Get()->Inference(colors_list, id_name, data, prob, img);
 
     // 处理结果
     if (!boxes->empty()) {
       // 格式化成 json 字符串，输出
       for (const auto box: *boxes) {
-        std::cout << box.ToJson().dump(4) << std::endl;
+        std::cout << box.ToJson().dump() << std::endl;
       }
       std::cout << std::endl;
 
@@ -117,8 +114,9 @@ int main(int argc, char **argv) {
 
       // status 的设置一定在 image 和 rect 之前，否则 rpc 会读到无用数据
       info.set_status(true);
+    } else {
+      info.set_status(false);
     }
-    info.set_status(false);
 
     // 显示图片，检测退出
     cv::imshow("dst", img);
@@ -127,16 +125,8 @@ int main(int argc, char **argv) {
       break;
     }
 
-    // 读取 signalfd 数据（数据代表信号），检测到对应信号就退出循环
-    struct signalfd_siginfo sig_info{};
-    auto size = read(signal_fd, &sig_info, sizeof(signalfd_siginfo));
-    if (size > 0) {
-      if (SIGINT == sig_info.ssi_signo || SIGQUIT == sig_info.ssi_signo || SIGTERM == sig_info.ssi_signo) {
-        break;
-      } else {
-        std::cout << "Read unexpected signal" << std::endl;
-        exit(EXIT_FAILURE);
-      }
+    if (!is_running) {
+      break;
     }
 
   }

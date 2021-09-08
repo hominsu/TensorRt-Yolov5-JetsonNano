@@ -77,7 +77,7 @@ file(GLOB ProjectSRC
         "detect_service/*.cc"
         "config/*.cc"
         "model/*.cc"
-        "util/*.cc"
+        "utils/*.cc"
         "*.cc")
 
 # 创建静态链接库，也可以生成动态的（SHARED）

@@ -2,8 +2,8 @@
 // Created by Homin Su on 2021/8/17.
 //
 
-#ifndef YOLOV5_UTIL_X_THREAD_H_
-#define YOLOV5_UTIL_X_THREAD_H_
+#ifndef YOLOV5_UTILS_X_THREAD_H_
+#define YOLOV5_UTILS_X_THREAD_H_
 
 #include <thread>
 #include <shared_mutex>
@@ -37,4 +37,4 @@ class XThread {
   virtual void Main() = 0;
 };
 
-#endif //YOLOV5_UTIL_X_THREAD_H_
+#endif //YOLOV5_UTILS_X_THREAD_H_

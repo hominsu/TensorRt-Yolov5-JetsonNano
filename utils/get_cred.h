@@ -2,8 +2,8 @@
 // Created by Homin Su on 2021/8/16.
 //
 
-#ifndef YOLOV5_UTIL_GET_CRED_H_
-#define YOLOV5_UTIL_GET_CRED_H_
+#ifndef YOLOV5_UTILS_GET_CRED_H_
+#define YOLOV5_UTILS_GET_CRED_H_
 
 #include <grpc++/grpc++.h>
 
@@ -14,4 +14,4 @@ class GetCred {
   static std::shared_ptr<grpc::ChannelCredentials> GetClientCred();
 };
 
-#endif //YOLOV5_UTIL_GET_CRED_H_
+#endif //YOLOV5_UTILS_GET_CRED_H_

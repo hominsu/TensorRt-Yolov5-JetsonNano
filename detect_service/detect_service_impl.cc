@@ -7,12 +7,12 @@
 ::grpc::Status DetectServiceImpl::DetectedRect(::grpc::ServerContext *_context,
                                                const ::Detect::DetectRequest *_request,
                                                ::Detect::DetectResponse *_response) {
-  if (_request->status()) {
-    // 写入检测状态，图片中检测到对象即为 true
-    _response->set_status(info_.status());
+  // 写入检测状态，如果图片中检测到对象即为 true
+  _response->set_status(info_.status());
 
+  if (_request->status()) {
     // 如果检测到，继续写入 rect 和 image
-    if (info_.status()){
+    if (info_.status()) {
       // 写入图片
       _response->set_image(info_.image());
 

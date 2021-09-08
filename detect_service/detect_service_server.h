@@ -6,7 +6,7 @@
 #define YOLOV5_DETECT_SERVICE_DETECT_SERVICE_SERVER_H_
 
 #include <grpc++/grpc++.h>
-#include "../util/x_thread.h"
+#include "../utils/x_thread.h"
 #include "../defs/info.h"
 
 class DetectServiceServer : public XThread {
