@@ -1,47 +1,89 @@
-#include <jsoncpp/json/json.h>
-#include <opencv4/opencv2/opencv.hpp>
+//
+// Created by Homin Su on 2021/9/3.
+//
 
-#include <iostream>
-#include <chrono>
 #include <cmath>
 
-#include "cuda_utils.h"
-#include "logging.h"
-#include "common.hpp"
+#include "yolo_v_5.h"
 #include "utils.h"
-#include "calibrator.h"
-#include "gen_color.h"
+#include "cuda_utils.h"
+#include "common.hpp"
 
-#include "http/server.h"
-#include "defs/box.h"
+YoloV5::YoloV5() {
+  cudaSetDevice(DEVICE);
+}
 
-#define USE_FP16  // set USE_INT8 or USE_FP16 or USE_FP32
-#define DEVICE 0  // GPU id
-#define NMS_THRESH 0.4
-#define CONF_THRESH 0.5
-#define BATCH_SIZE 1
+YoloV5::~YoloV5() {
+  if (nullptr != trtModelStream_) {
+    delete[] trtModelStream_;
+    trtModelStream_ = nullptr;
+    std::cout << "delete trtModelStream_" << std::endl;
+  }
 
-// stuff we know about the network and the input/output blobs
-static const int INPUT_H = Yolo::INPUT_H;
-static const int INPUT_W = Yolo::INPUT_W;
-static const int CLASS_NUM = Yolo::CLASS_NUM;
-static const int OUTPUT_SIZE = Yolo::MAX_OUTPUT_BBOX_COUNT * sizeof(Yolo::Detection) / sizeof(float)
-    + 1;  // we assume the yololayer outputs no more than MAX_OUTPUT_BBOX_COUNT boxes that conf >= 0.1
-const char *INPUT_BLOB_NAME = "data";
-const char *OUTPUT_BLOB_NAME = "prob";
-static Logger gLogger;
+  if (is_prepared_) {
+    // Release stream and buffers
+    cudaStreamDestroy(stream_);
+    CUDA_CHECK(cudaFree(gpu_buffers_[input_index_]))
+    CUDA_CHECK(cudaFree(gpu_buffers_[output_index_]))
+    std::cout << "Release stream and buffers" << std::endl;
 
-cv::Mat &BGR2RGB(float *data, cv::Mat &img);
-std::vector<Box::BoxRect> Inference(const std::vector<cv::Scalar> &colors_list,
-                                    const std::vector<std::string> &id_name,
-                                    const float *data,
-                                    float *prob,
-                                    const IExecutionContext *context,
-                                    void **buffers,
-                                    cudaStream_t &stream,
-                                    cv::Mat &img);
+    // Destroy the engine
+    if (nullptr != context_) {
+      context_->destroy();
+      context_ = nullptr;
+      std::cout << "context_->destroy();" << std::endl;
+    }
+    if (nullptr != engine_) {
+      engine_->destroy();
+      engine_ = nullptr;
+      std::cout << "engine_->destroy();" << std::endl;
+    }
+    if (nullptr != runtime_) {
+      runtime_->destroy();
+      runtime_ = nullptr;
+      std::cout << "runtime_->destroy();" << std::endl;
+    }
 
-static int get_width(int x, float gw, int divisor = 8) {
+    is_prepared_ = false;
+  }
+}
+
+bool YoloV5::Parse(int argc, char **argv) {
+  if (argc < 3) return false;
+  if (std::string(argv[1]) == "-s" && (argc == 5 || argc == 7)) {
+    wts_name_ = std::string(argv[2]);
+    engine_name_ = std::string(argv[3]);
+    auto net = std::string(argv[4]);
+    if (net[0] == 's') {
+      gd_ = 0.33;
+      gw_ = 0.50;
+    } else if (net[0] == 'm') {
+      gd_ = 0.67;
+      gw_ = 0.75;
+    } else if (net[0] == 'l') {
+      gd_ = 1.0;
+      gw_ = 1.0;
+    } else if (net[0] == 'x') {
+      gd_ = 1.33;
+      gw_ = 1.25;
+    } else if (net[0] == 'c' && argc == 7) {
+      gd_ = atof(argv[5]);
+      gw_ = atof(argv[6]);
+    } else {
+      return false;
+    }
+    if (net.size() == 2 && net[1] == '6') {
+      is_p6_ = true;
+    }
+  } else if (std::string(argv[1]) == "-d" && argc == 3) {
+    engine_name_ = std::string(argv[2]);
+  } else {
+    return false;
+  }
+  return true;
+}
+
+int YoloV5::get_width(int x, float gw, int divisor) {
   //return math.ceil(x / divisor) * divisor
   if (int(x * gw) % divisor == 0) {
     return int(x * gw);
@@ -49,7 +91,7 @@ static int get_width(int x, float gw, int divisor = 8) {
   return (int(x * gw / divisor) + 1) * divisor;
 }
 
-static int get_depth(int x, float gd) {
+int YoloV5::get_depth(int x, float gd) {
   if (x == 1) {
     return 1;
   } else {
@@ -57,13 +99,13 @@ static int get_depth(int x, float gd) {
   }
 }
 
-ICudaEngine *build_engine(unsigned int maxBatchSize,
-                          IBuilder *builder,
-                          IBuilderConfig *config,
-                          DataType dt,
-                          float &gd,
-                          float &gw,
-                          std::string &wts_name) {
+ICudaEngine *YoloV5::build_engine(unsigned int maxBatchSize,
+                                  IBuilder *builder,
+                                  IBuilderConfig *config,
+                                  DataType dt,
+                                  float &gd,
+                                  float &gw,
+                                  std::string &wts_name) {
   INetworkDefinition *network = builder->createNetworkV2(0U);
 
   // Create input tensor of shape {3, INPUT_H, INPUT_W} with name INPUT_BLOB_NAME
@@ -72,7 +114,7 @@ ICudaEngine *build_engine(unsigned int maxBatchSize,
 
   std::map<std::string, Weights> weightMap = loadWeights(wts_name);
 
-  /* ------ yolov5 backbone------ */
+  /* ------ model backbone------ */
   auto focus0 = focus(network, weightMap, *data, 3, get_width(64, gw), 3, "model.0");
   auto conv1 = convBlock(network, weightMap, *focus0->getOutput(0), get_width(128, gw), 3, 2, 1, "model.1");
   auto bottleneck_CSP2 = C3(network,
@@ -111,7 +153,7 @@ ICudaEngine *build_engine(unsigned int maxBatchSize,
   auto spp8 =
       SPP(network, weightMap, *conv7->getOutput(0), get_width(1024, gw), get_width(1024, gw), 5, 9, 13, "model.8");
 
-  /* ------ yolov5 head ------ */
+  /* ------ model head ------ */
   auto bottleneck_csp9 = C3(network,
                             weightMap,
                             *spp8->getOutput(0),
@@ -231,20 +273,20 @@ ICudaEngine *build_engine(unsigned int maxBatchSize,
   network->destroy();
 
   // Release host memory
-  for (auto &mem : weightMap) {
+  for (auto &mem: weightMap) {
     free((void *) (mem.second.values));
   }
 
   return engine;
 }
 
-ICudaEngine *build_engine_p6(unsigned int maxBatchSize,
-                             IBuilder *builder,
-                             IBuilderConfig *config,
-                             DataType dt,
-                             float &gd,
-                             float &gw,
-                             std::string &wts_name) {
+ICudaEngine *YoloV5::build_engine_p6(unsigned int maxBatchSize,
+                                     IBuilder *builder,
+                                     IBuilderConfig *config,
+                                     DataType dt,
+                                     float &gd,
+                                     float &gw,
+                                     std::string &wts_name) {
   INetworkDefinition *network = builder->createNetworkV2(0U);
 
   // Create input tensor of shape {3, INPUT_H, INPUT_W} with name INPUT_BLOB_NAME
@@ -253,7 +295,7 @@ ICudaEngine *build_engine_p6(unsigned int maxBatchSize,
 
   std::map<std::string, Weights> weightMap = loadWeights(wts_name);
 
-  /* ------ yolov5 backbone------ */
+  /* ------ model backbone------ */
   auto focus0 = focus(network, weightMap, *data, 3, get_width(64, gw), 3, "model.0");
   auto conv1 = convBlock(network, weightMap, *focus0->getOutput(0), get_width(128, gw), 3, 2, 1, "model.1");
   auto c3_2 = C3(network,
@@ -313,7 +355,7 @@ ICudaEngine *build_engine_p6(unsigned int maxBatchSize,
                   0.5,
                   "model.11");
 
-  /* ------ yolov5 head ------ */
+  /* ------ model head ------ */
   auto conv12 = convBlock(network, weightMap, *c3_11->getOutput(0), get_width(768, gw), 1, 1, 1, "model.12");
   auto upsample13 = network->addResize(*conv12->getOutput(0));
   assert(upsample13);
@@ -458,21 +500,21 @@ ICudaEngine *build_engine_p6(unsigned int maxBatchSize,
   network->destroy();
 
   // Release host memory
-  for (auto &mem : weightMap) {
+  for (auto &mem: weightMap) {
     free((void *) (mem.second.values));
   }
 
   return engine;
 }
 
-void APIToModel(unsigned int maxBatchSize,
-                IHostMemory **modelStream,
-                bool &is_p6,
-                float &gd,
-                float &gw,
-                std::string &wts_name) {
+void YoloV5::APIToModel(unsigned int maxBatchSize,
+                        IHostMemory **modelStream,
+                        bool &is_p6,
+                        float &gd,
+                        float &gw,
+                        std::string &wts_name) {
   // Create builder
-  IBuilder *builder = createInferBuilder(gLogger);
+  IBuilder *builder = createInferBuilder(g_logger_);
   IBuilderConfig *config = builder->createBuilderConfig();
 
   // Create model to populate the network, then set the outputs and create an engine
@@ -493,77 +535,15 @@ void APIToModel(unsigned int maxBatchSize,
   config->destroy();
 }
 
-void doInference(IExecutionContext &context,
-                 cudaStream_t &stream,
-                 void **buffers,
-                 float *input,
-                 float *output,
-                 int batchSize) {
-  // DMA input batch data to device, infer on the batch asynchronously, and DMA output back to host
-  CUDA_CHECK(cudaMemcpyAsync(buffers[0],
-                             input,
-                             batchSize * 3 * INPUT_H * INPUT_W * sizeof(float),
-                             cudaMemcpyHostToDevice,
-                             stream));
-  context.enqueue(batchSize, buffers, stream, nullptr);
-  CUDA_CHECK(cudaMemcpyAsync(output,
-                             buffers[1],
-                             batchSize * OUTPUT_SIZE * sizeof(float),
-                             cudaMemcpyDeviceToHost,
-                             stream));
-  cudaStreamSynchronize(stream);
-}
-
-bool parse_args(int argc,
-                char **argv,
-                std::string &wts,
-                std::string &engine,
-                bool &is_p6,
-                float &gd,
-                float &gw) {
-  if (argc < 3) return false;
-  if (std::string(argv[1]) == "-s" && (argc == 5 || argc == 7)) {
-    wts = std::string(argv[2]);
-    engine = std::string(argv[3]);
-    auto net = std::string(argv[4]);
-    if (net[0] == 's') {
-      gd = 0.33;
-      gw = 0.50;
-    } else if (net[0] == 'm') {
-      gd = 0.67;
-      gw = 0.75;
-    } else if (net[0] == 'l') {
-      gd = 1.0;
-      gw = 1.0;
-    } else if (net[0] == 'x') {
-      gd = 1.33;
-      gw = 1.25;
-    } else if (net[0] == 'c' && argc == 7) {
-      gd = atof(argv[5]);
-      gw = atof(argv[6]);
-    } else {
-      return false;
-    }
-    if (net.size() == 2 && net[1] == '6') {
-      is_p6 = true;
-    }
-  } else if (std::string(argv[1]) == "-d" && argc == 3) {
-    engine = std::string(argv[2]);
-  } else {
-    return false;
-  }
-  return true;
-}
-
-inline cv::Mat &BGR2RGB(float *data, cv::Mat &img) {
+cv::Mat &YoloV5::BGR2RGB(float *data, cv::Mat &img) {
   cv::Mat pr_img = preprocess_img(img, INPUT_W, INPUT_H); // letterbox BGR to RGB
   int i = 0;
   for (int row = 0; row < INPUT_H; ++row) {
     uchar *uc_pixel = pr_img.data + row * pr_img.step;
     for (int col = 0; col < INPUT_W; ++col) {
-      data[i] = (float) uc_pixel[2] / 255.0;
-      data[i + INPUT_H * INPUT_W] = (float) uc_pixel[1] / 255.0;
-      data[i + 2 * INPUT_H * INPUT_W] = (float) uc_pixel[0] / 255.0;
+      data[i] = static_cast<float>(uc_pixel[2]) / 255.0;
+      data[i + INPUT_H * INPUT_W] = static_cast<float>(uc_pixel[1]) / 255.0;
+      data[i + 2 * INPUT_H * INPUT_W] = static_cast<float>(uc_pixel[0]) / 255.0;
       uc_pixel += 3;
       ++i;
     }
@@ -571,184 +551,144 @@ inline cv::Mat &BGR2RGB(float *data, cv::Mat &img) {
   return img;
 }
 
-std::vector<Box::BoxRect> Inference(const std::vector<cv::Scalar> &colors_list,
-                                    const std::vector<std::string> &id_name,
-                                    float *data,
-                                    float *prob,
-                                    IExecutionContext *context,
-                                    void **buffers,
-                                    cudaStream_t &stream,
-                                    cv::Mat &img) {
-  doInference(*context, stream, buffers, data, prob, BATCH_SIZE);
+void YoloV5::doInference(float *input, float *output, int batchSize) {
+  // DMA input batch data to device, infer on the batch asynchronously, and DMA output back to host
+  CUDA_CHECK(cudaMemcpyAsync(gpu_buffers_[0],
+                             input,
+                             batchSize * 3 * INPUT_H * INPUT_W * sizeof(float),
+                             cudaMemcpyHostToDevice,
+                             stream_));
+
+  context_->enqueue(batchSize, gpu_buffers_, stream_, nullptr);
+
+  CUDA_CHECK(cudaMemcpyAsync(output,
+                             gpu_buffers_[1],
+                             batchSize * OUTPUT_SIZE * sizeof(float),
+                             cudaMemcpyDeviceToHost,
+                             stream_));
+
+  cudaStreamSynchronize(stream_);
+}
+
+std::shared_ptr<std::vector<Box::Rect>> YoloV5::Inference(const std::vector<cv::Scalar> &colors_list,
+                                                          const std::vector<std::string> &id_name,
+                                                          float *_data,
+                                                          float *_prob,
+                                                          cv::Mat &img) {
+  doInference(_data, _prob, BATCH_SIZE);
   std::vector<std::vector<Yolo::Detection>> batch_res(1);
   {
     auto &res = batch_res[0];
-    nms(res, &prob[0], CONF_THRESH, NMS_THRESH);
+    nms(res, &_prob[0], CONF_THRESH, NMS_THRESH);
   }
   auto &res = batch_res[0];
-  std::vector<Box::BoxRect> boxes;
-  for (auto &re : res) {
+  auto boxes = std::make_shared<std::vector<Box::Rect>>();
+//  std::vector<Box::Rect> boxes;
+  for (auto &re: res) {
+    const int id = static_cast<int>( re.class_id);
     cv::Rect r = get_rect(img, re.bbox);
-    cv::rectangle(img, r, colors_list[(int) re.class_id], 2);
+    cv::rectangle(img, r, colors_list[id], 2);
     cv::putText(img,
         //id_name[std::to_string(static_cast<int>( res[j].class_id))].asString() + " "
         //+ std::to_string(static_cast<int>(res[j].conf * 100)) + "%",
-                id_name[static_cast<int>( re.class_id)] + " "
+                id_name[id] + " "
                     + std::to_string(static_cast<int>(re.conf * 100)) + "%",
                 cv::Point(r.x, r.y - 1),
                 cv::FONT_HERSHEY_PLAIN,
                 1.2,
-                colors_list[(int) re.class_id],
+                colors_list[id],
                 2);
 
-    cv::circle(img, Box::BoxRect(r).getMPoint(), 4, colors_list[static_cast<int>(re.class_id)], -1);
-    boxes.emplace_back(r);
+    cv::circle(img,
+               Box::Rect(r, id).getMPoint(),
+               4,
+               colors_list[id],
+               -1);
+    boxes->emplace_back(r, id);
   }
   return boxes;
 }
 
-int main(int argc, char **argv) {
-  Server::Get()->Start();
-  cudaSetDevice(DEVICE);
-
-  std::string wts_name;
-  std::string engine_name;
-  bool is_p6 = false;
-  float gd = 0.0f, gw = 0.0f;
-//  std::string img_dir;a
-  if (!parse_args(argc, argv, wts_name, engine_name, is_p6, gd, gw)) {
-    std::cerr << "arguments not right!" << std::endl;
-    std::cerr << "./yolov5 -s [.wts] [.engine] [s/m/l/x/s6/m6/l6/x6 or c/c6 gd gw]  // serialize model to plan file"
-              << std::endl;
-    std::cerr << "./yolov5 -d [.engine]  // deserialize plan file and run inference" << std::endl;
-    return -1;
+void YoloV5::ParseArgs(int argc, char **argv) {
+  if (!Parse(argc, argv)) {
+    std::stringstream ss;
+    ss << "arguments not right!" << std::endl;
+    ss << "./yolov5 -s [.wts] [.engine] [s/m/l/x/s6/m6/l6/x6 or c/c6 gd gw]  // serialize model to plan file"
+       << std::endl;
+    ss << "./yolov5 -d [.engine]  // deserialize plan file and run inference" << std::endl;
+    throw YoloException(ss.str());
   }
-
-  // create a model using the API directly and serialize it to a stream
-  if (!wts_name.empty()) {
-    IHostMemory *modelStream{nullptr};
-    APIToModel(BATCH_SIZE, &modelStream, is_p6, gd, gw, wts_name);
-    assert(modelStream != nullptr);
-    std::ofstream p(engine_name, std::ios::binary);
-    if (!p) {
-      std::cerr << "could not open plan output file" << std::endl;
-      return -1;
-    }
-    p.write(reinterpret_cast<const char *>(modelStream->data()), modelStream->size());
-    modelStream->destroy();
-    return 0;
-  }
-
-  // deserialize the .engine and run inference
-  std::ifstream file(engine_name, std::ios::binary);
-  if (!file.good()) {
-    std::cerr << "read " << engine_name << " error!" << std::endl;
-    return -1;
-  }
-  char *trtModelStream = nullptr;
-  size_t size = 0;
-  file.seekg(0, std::ifstream::end);
-  size = file.tellg();
-  file.seekg(0, std::ifstream::beg);
-  trtModelStream = new char[size];
-  assert(trtModelStream);
-  file.read(trtModelStream, size);
-  file.close();
-
-  // open the camera
-  cv::VideoCapture capture(0);
-  if (!capture.isOpened()) {
-    std::cout << "Failed to open camera." << std::endl;
-    return -1;
-  }
-  capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-  capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-
-  // create a window to show the detected frame
-  cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
-
-  // ----------------------------------
-  std::vector<cv::Scalar> colors_list = GetColors(CLASS_NUM);
-//  Json::Value id_name = LoadJsonInfo("../coco_id_name.json");
-  std::vector<std::string> id_name = {
-      "ball"
-  };
-  // ----------------------------------
-
-  // prepare input data ---------------------------
-  static float data[BATCH_SIZE * 3 * INPUT_H * INPUT_W];
-  static float prob[BATCH_SIZE * OUTPUT_SIZE];
-  IRuntime *runtime = createInferRuntime(gLogger);
-  assert(runtime != nullptr);
-  ICudaEngine *engine = runtime->deserializeCudaEngine(trtModelStream, size);
-  assert(engine != nullptr);
-  IExecutionContext *context = engine->createExecutionContext();
-  assert(context != nullptr);
-  delete[] trtModelStream;
-  assert(engine->getNbBindings() == 2);
-  void *buffers[2];
-  // In order to bind the buffers, we need to know the names of the input and output tensors.
-  // Note that indices are guaranteed to be less than IEngine::getNbBindings()
-  const int inputIndex = engine->getBindingIndex(INPUT_BLOB_NAME);
-  const int outputIndex = engine->getBindingIndex(OUTPUT_BLOB_NAME);
-  assert(inputIndex == 0);
-  assert(outputIndex == 1);
-  // Create GPU buffers on device
-  CUDA_CHECK(cudaMalloc(&buffers[inputIndex], BATCH_SIZE * 3 * INPUT_H * INPUT_W * sizeof(float)));
-  CUDA_CHECK(cudaMalloc(&buffers[outputIndex], BATCH_SIZE * OUTPUT_SIZE * sizeof(float)));
-  // Create stream
-  cudaStream_t stream;
-  CUDA_CHECK(cudaStreamCreate(&stream));
-
-  while (true) {
-    if (true) {
-      cv::Mat img;
-      capture >> img;
-      if (img.empty()) {
-        continue;
-      }
-
-      img = BGR2RGB(data, img);
-
-      auto boxes = Inference(colors_list, id_name, data, prob, context, buffers, stream, img);
-
-      /*
-      std::stringstream cv_mat_ss;
-      cv_mat_ss << img;
-
-      std::stringstream boxes_ss;
-      boxes_ss << nlohmann::json(boxes).dump();
-
-      nlohmann::json js_obj;
-      Response resp{cv_mat_ss.str(), boxes_ss.str()};
-      resp.to_json(js_obj, resp);
-
-      Server::Get()->Send(Api::Body{"127.0.0.1:9000/detectDone", "POST", js_obj.dump()});
-
-      Server::Get()->SetDetect(false);
-       */
-
-      cv::imshow("dst", img);
-      if (cv::waitKey(1) == 'q') {
-        cv::destroyAllWindows();
-        break;
-      }
-    } else {
-      std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }
-  }
-
-  // Release stream and buffers
-  cudaStreamDestroy(stream);
-  CUDA_CHECK(cudaFree(buffers[inputIndex]));
-  CUDA_CHECK(cudaFree(buffers[outputIndex]));
-  // Destroy the engine
-  context->destroy();
-  engine->destroy();
-  runtime->destroy();
-
-  capture.release();
-  Server::Get()->Stop();
-  return 0;
 }
 
+void YoloV5::GenEngine() {
+  // create a model using the API directly and serialize it to a stream
+  if (!wts_name_.empty()) {
+    std::cout << "Gen Engine ..." << std::endl;
+    IHostMemory *modelStream{nullptr};
+
+    APIToModel(BATCH_SIZE, &modelStream, is_p6_, gd_, gw_, wts_name_);
+    assert(modelStream != nullptr);
+
+    std::ofstream p(engine_name_, std::ios::binary);
+    if (!p) {
+      throw YoloException("could not open plan output file\n");
+    }
+    p.write(reinterpret_cast<const char *>(modelStream->data()), static_cast<long>(modelStream->size()));
+
+    modelStream->destroy();
+    throw YoloQuit("Save Engine ...\n");
+  }
+}
+
+void YoloV5::LoadEngine() {
+  // deserialize the .engine and run inference
+  std::ifstream file(engine_name_, std::ios::binary);
+  if (!file.good()) {
+    throw YoloException("read " + engine_name_ + " error!\n");
+  }
+
+  // 移动文件指针，获取文件大小
+  file.seekg(0, std::ifstream::end);
+  model_size_ = file.tellg();
+
+  // 将文件指针移回头部
+  file.seekg(0, std::ifstream::beg);
+
+  // 写入模型数据
+  trtModelStream_ = new char[model_size_];
+  assert(trtModelStream_);
+  file.read(trtModelStream_, model_size_);
+  file.close();
+}
+
+void YoloV5::PrepareInput() {
+  // prepare input data ---------------------------
+  runtime_ = createInferRuntime(g_logger_);
+  assert(runtime_ != nullptr);
+
+  engine_ = runtime_->deserializeCudaEngine(trtModelStream_, model_size_);
+  assert(engine_ != nullptr);
+
+  context_ = engine_->createExecutionContext();
+  assert(context_ != nullptr);
+
+  delete[] trtModelStream_;
+  trtModelStream_ = nullptr;
+
+  assert(engine_->getNbBindings() == 2);
+
+  // In order to bind the buffers, we need to know the names of the input and output tensors.
+  // Note that indices are guaranteed to be less than IEngine::getNbBindings()
+  input_index_ = engine_->getBindingIndex(INPUT_BLOB_NAME);
+  output_index_ = engine_->getBindingIndex(OUTPUT_BLOB_NAME);
+  assert(input_index_ == 0);
+  assert(output_index_ == 1);
+
+  // Create GPU buffers on device
+  CUDA_CHECK(cudaMalloc(&gpu_buffers_[input_index_], BATCH_SIZE * 3 * INPUT_H * INPUT_W * sizeof(float)));
+  CUDA_CHECK(cudaMalloc(&gpu_buffers_[output_index_], BATCH_SIZE * OUTPUT_SIZE * sizeof(float)));
+
+  CUDA_CHECK(cudaStreamCreate(&stream_));
+
+  is_prepared_ = true;
+}

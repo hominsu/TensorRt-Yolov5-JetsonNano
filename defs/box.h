@@ -1,47 +1,68 @@
 //
-// Created by HominSu on 2021/7/22.
+// Created by Homin Su on 2021/9/4.
 //
 
-#ifndef YOLOLAYER_H_DEFS_BOX_H_
-#define YOLOLAYER_H_DEFS_BOX_H_
+#ifndef YOLOV5_DEFS_BOX_H_
+#define YOLOV5_DEFS_BOX_H_
 
-#include <opencv4/opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
+#include <opencv4/opencv2/opencv.hpp>
 
-/**
- * 保存 rect，并对其进行序列化与反序列化
- */
 namespace Box {
-struct BoxRect {
-  int x{};
-  int y{};
-  int width{};
-  int height{};
-  int area{};
+struct Rect {
+ private:
+  int x_;       // x 坐标
+  int y_;       // y 坐标
+  int width_;   // 宽度
+  int height_;  // 高度
+  int area_;    // 面积
+  int class_id_;   // 检测种类
 
-  BoxRect(int x, int y, int width, int height, int area) : x(x), y(y), width(width), height(height), area(area) {}
+ public:
+  explicit Rect(const nlohmann::json &_j)
+      : x_(_j.at("x")),
+        y_(_j.at("y")),
+        width_(_j.at("width")),
+        height_(_j.at("height")),
+        area_(_j.at("area")),
+        class_id_(_j.at("class_id")) {}
 
-  explicit BoxRect(const cv::Rect &_rect)
-      : x(_rect.x), y(_rect.y), width(_rect.width), height(_rect.height), area(_rect.area()) {}
+  explicit Rect(const cv::Rect &_rect, int _class_id)
+      : x_(_rect.x),
+        y_(_rect.y),
+        width_(_rect.width),
+        height_(_rect.height),
+        area_(_rect.area()),
+        class_id_(_class_id) {}
+
+  [[nodiscard]] inline nlohmann::json ToJson() const {
+    return nlohmann::json{{"x", x_}, {"y", y_}, {"width", width_}, {"height", height_},
+                          {"area", area_}, {"class_id", class_id_}};
+  }
 
   [[nodiscard]] inline cv::Point getMPoint() const {
-    return {x + width / 2, y + height / 2};
+    return {x_ + width_ / 2, y_ + height_ / 2};
+  }
+
+  [[nodiscard]] int x() const {
+    return x_;
+  }
+  [[nodiscard]] int y() const {
+    return y_;
+  }
+  [[nodiscard]] int width() const {
+    return width_;
+  }
+  [[nodiscard]] int height() const {
+    return height_;
+  }
+  [[nodiscard]] int area() const {
+    return area_;
+  }
+  [[nodiscard]] int class_id() const {
+    return class_id_;
   }
 };
-
-void to_json(nlohmann::json &j, const BoxRect &_box_info) {
-  j = nlohmann::json{{"x", _box_info.x}, {"y", _box_info.y}, {"width", _box_info.width}, {"height", _box_info.height},
-                     {"area", _box_info.area}};
 }
 
-void from_json(const nlohmann::json &j, BoxRect &_box_info) {
-  j.at("x").get_to(_box_info.x);
-  j.at("y").get_to(_box_info.y);
-  j.at("width").get_to(_box_info.width);
-  j.at("height").get_to(_box_info.height);
-  j.at("area").get_to(_box_info.area);
-}
-
-}
-
-#endif //YOLOLAYER_H_DEFS_BOX_H_
+#endif //YOLOV5_DEFS_BOX_H_

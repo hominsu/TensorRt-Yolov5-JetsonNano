@@ -1,19 +1,19 @@
 //
-// Created by HominSu on 2021/5/13.
+// Created by Homin Su on 2021/8/17.
 //
 
-#include <chrono>
-#include <iostream>
-
 #include "x_thread.h"
+#include <chrono>
 
 /**
  * @brief 线程开始函数
  * @details 该函数是多线程的开始函数，会将 Main 函数放入一个线程中运行
  */
 void XThread::Start() {
-  this->is_running_ = true;
-  this->thread_ = std::thread(&XThread::Main, this);
+  if (!this->IsRunning()) {
+    this->SetIsRunning(true);
+    this->thread_ = std::thread(&XThread::Main, this);
+  }
 }
 
 /**
@@ -29,9 +29,8 @@ void XThread::Wait() {
  * @brief 停止线程
  */
 void XThread::Stop() {
-  {
-    std::unique_lock<std::shared_mutex> lock(isRunning_mutex_);
-    this->is_running_ = false;
+  if (this->IsRunning()) {
+    this->SetIsRunning(false);
   }
   Wait();
 }
@@ -54,8 +53,17 @@ void XThread::ThreadSleep(std::chrono::milliseconds _time) {
  * @brief 获取 isRunning_ 状态
  * @return bool 返回值为 true，说明线程当前处于运行状态
  */
-bool XThread::is_running() {
+bool XThread::IsRunning() const {
   std::shared_lock<std::shared_mutex> lock(isRunning_mutex_);
-  return this->is_running_;
+  return is_running_;
+}
+
+/**
+ * @brief 设置线程运行状态
+ * @param is_running 运行状态
+ */
+void XThread::SetIsRunning(bool is_running) {
+  std::unique_lock<std::shared_mutex> lock(isRunning_mutex_);
+  is_running_ = is_running;
 }
 

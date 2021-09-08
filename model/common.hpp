@@ -1,11 +1,11 @@
-#ifndef YOLOV5_COMMON_H_
-#define YOLOV5_COMMON_H_
+#ifndef YOLOV5_MODEL_COMMON_H_
+#define YOLOV5_MODEL_COMMON_H_
 
 #include <fstream>
 #include <map>
 #include <sstream>
 #include <vector>
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include "NvInfer.h"
 #include "yololayer.h"
 
@@ -359,5 +359,5 @@ IPluginV2Layer *addYoLoLayer(INetworkDefinition *network,
   auto yolo = network->addPluginV2(&input_tensors[0], input_tensors.size(), *plugin_obj);
   return yolo;
 }
-#endif
+#endif // YOLOV5_MODEL_COMMON_H_
 

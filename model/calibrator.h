@@ -1,9 +1,10 @@
-#ifndef ENTROPY_CALIBRATOR_H
-#define ENTROPY_CALIBRATOR_H
+#ifndef YOLOV5_MODEL_CALIBRATOR_H
+#define YOLOV5_MODEL_CALIBRATOR_H
 
-#include "NvInfer.h"
+#include <NvInfer.h>
 #include <string>
 #include <vector>
+#include "macros.h"
 
 //! \class Int8EntropyCalibrator2
 //!
@@ -21,10 +22,10 @@ class Int8EntropyCalibrator2 : public nvinfer1::IInt8EntropyCalibrator2 {
                          bool read_cache = true);
 
   virtual ~Int8EntropyCalibrator2();
-  int getBatchSize() const override;
-  bool getBatch(void *bindings[], const char *names[], int nbBindings) override;
-  const void *readCalibrationCache(size_t &length) override;
-  void writeCalibrationCache(const void *cache, size_t length) override;
+  int getBatchSize() const TRT_NOEXCEPT override;
+  bool getBatch(void *bindings[], const char *names[], int nbBindings) TRT_NOEXCEPT override;
+  const void *readCalibrationCache(size_t &length) TRT_NOEXCEPT override;
+  void writeCalibrationCache(const void *cache, size_t length) TRT_NOEXCEPT override;
 
  private:
   int batchsize_;
@@ -41,4 +42,4 @@ class Int8EntropyCalibrator2 : public nvinfer1::IInt8EntropyCalibrator2 {
   std::vector<char> calib_cache_;
 };
 
-#endif // ENTROPY_CALIBRATOR_H
+#endif // YOLOV5_MODEL_CALIBRATOR_H
