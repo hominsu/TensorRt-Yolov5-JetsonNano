@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
   capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 
   // create a window to show the detected frame
-  cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+//  cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
 
   // 框颜色
   std::vector<cv::Scalar> colors_list = GetColors(YoloV5::CLASS_NUM);
@@ -119,11 +119,11 @@ int main(int argc, char **argv) {
     }
 
     // 显示图片，检测退出
-    cv::imshow("dst", img);
-    if (cv::waitKey(1) == 'q') {
-      cv::destroyAllWindows();
-      break;
-    }
+//    cv::imshow("dst", img);
+//    if (cv::waitKey(1) == 'q') {
+//      cv::destroyAllWindows();
+//      break;
+//    }
 
     if (!is_running) {
       break;

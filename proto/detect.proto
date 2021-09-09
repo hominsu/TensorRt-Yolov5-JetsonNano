@@ -24,6 +24,3 @@ message DetectResponse {
 service DetectResultService {
   rpc DetectedRect (DetectRequest) returns (DetectResponse) {};
 }
-
-// protoc --proto_path=./proto/ --grpc_out=./detect_service --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` detect.proto
-// protoc --proto_path=./proto/ --cpp_out=./detect_service detect.proto
