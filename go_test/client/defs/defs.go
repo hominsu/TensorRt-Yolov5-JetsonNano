@@ -3,14 +3,14 @@ package defs
 import Detect "test-yolov5-jetson-grpc/detect_service"
 
 type Response struct {
-	Status bool       `json:"status"`
-	Rect   []*BoxRect `json:"rect,omitempty"`
-	Image  []byte     `json:"image,omitempty"`
+	Status    bool       `json:"status"`
+	Rect      []*BoxRect `json:"rect,omitempty"`
+	Image     []byte     `json:"image,omitempty"`
 }
 
 type RespWithoutImg struct {
-	Status bool       `json:"status"`
-	Rect   []*BoxRect `json:"rect,omitempty"`
+	Status    bool       `json:"status"`
+	Rect      []*BoxRect `json:"rect,omitempty"`
 }
 
 type BoxRect struct {
@@ -47,15 +47,15 @@ func (r RpcResponse) ToResponse() *Response {
 		rect = append(rect, RpcRect{boxRect}.ToBoxRect())
 	}
 	return &Response{
-		Status: r.Status,
-		Rect:   rect,
-		Image:  r.Image,
+		Status:    r.Status,
+		Rect:      rect,
+		Image:     r.Image,
 	}
 }
 
 func (r Response) WithoutImg() *RespWithoutImg {
 	return &RespWithoutImg{
-		Status: r.Status,
-		Rect:   r.Rect,
+		Status:    r.Status,
+		Rect:      r.Rect,
 	}
 }

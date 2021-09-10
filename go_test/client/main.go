@@ -21,26 +21,33 @@ func main() {
 
 	ctx := context.Background()
 
+	window := gocv.NewWindow("image")
+
 	for {
 		resp, err := detectResultServiceClient.DetectedRect(ctx, &Detect.DetectRequest{Status: true})
 		if err != nil {
 			log.Println(err.Error())
+			continue
 		}
 
 		r := defs.RpcResponse{DetectResponse: resp}.ToResponse()
 		bytes, err := json.Marshal(r.WithoutImg())
 		if err != nil {
-			log.Println(err.Error())
+			log.Println("WithoutImg: ", err.Error())
 			return
 		}
 		fmt.Println(string(bytes))
 
-		if decodeImg, err := gocv.IMDecode(r.Image, gocv.IMReadColor); err != nil {
-			log.Println(err.Error())
-			return
-		} else {
-			gocv.IMWrite(time.Now().String()+".jpg", decodeImg)
+		if r.Status {
+			if decodeImg, err := gocv.IMDecode(r.Image, gocv.IMReadColor); err != nil {
+				log.Println("IMDecode: ",err.Error())
+				return
+			} else {
+				//gocv.IMWrite(time.Now().String()+".jpg", decodeImg)
+				window.IMShow(decodeImg)
+				window.WaitKey(1)
+			}
 		}
-		time.Sleep(time.Millisecond * 500)
+		time.Sleep(time.Millisecond * 39)
 	}
 }

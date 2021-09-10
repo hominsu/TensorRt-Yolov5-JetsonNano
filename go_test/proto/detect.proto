@@ -26,5 +26,3 @@ message DetectResponse {
 service DetectResultService {
   rpc DetectedRect (DetectRequest) returns (DetectResponse) {};
 }
-
-// protoc --proto_path=proto/ --go_out=./ --go-grpc_out=./ ./proto/detect.proto
