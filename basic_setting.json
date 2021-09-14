@@ -1,7 +1,7 @@
 {
   "uuid": "e2759aa7-c768-45f9-930b-53451c1c9114",
-  "server_rpc_address": "docker.for.mac.host.internal",
-  "server_rpc_port": "50002",
+  "rtmp_server_address": "192.168.18.138:1935",
+  "rtmp_server_port": "1935",
   "local_rpc_address": "0.0.0.0",
   "local_rpc_port": "50005"
 }
