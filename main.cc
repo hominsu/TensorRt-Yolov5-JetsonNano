@@ -15,6 +15,9 @@
 
 bool is_running = true;
 
+const int kWidth = 640;
+const int kHeight = 640;
+
 // cv::Mat 2 std::string，也可以通过 stringstream 将 cv::Mat 流转换为字符流
 // 但是以下方法，直接操作内存，快
 // TODO: 有没有更优雅的方法？
@@ -60,8 +63,8 @@ int main(int argc, char **argv) {
     std::cout << "Failed to open camera." << std::endl;
     return EXIT_FAILURE;
   }
-  capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-  capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+  capture.set(cv::CAP_PROP_FRAME_WIDTH, kWidth);
+  capture.set(cv::CAP_PROP_FRAME_HEIGHT, kHeight);
 
   // create a window to show the detected frame
 //  cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
@@ -76,6 +79,30 @@ int main(int argc, char **argv) {
   float data[BATCH_SIZE * 3 * YoloV5::INPUT_H * YoloV5::INPUT_W];
   float prob[BATCH_SIZE * YoloV5::OUTPUT_SIZE];
 
+  // 调用 ffmpeg 的命令
+  std::stringstream command;
+  command << "ffmpeg ";
+
+  // infile options
+  command << "-y "  // overwrite output files
+          << "-an " // disable audio
+          << "-f rawvideo " // force format to rawvideo
+          << "-vcodec rawvideo "  // force video rawvideo ('copy' to copy stream)
+          << "-pix_fmt bgr24 "  // set pixel format to bgr24
+          << "-s " + std::string(kWidth) + "x" + std::string(kHeight) + " "  // set frame size (WxH or abbreviation)
+          << "-r 30 "; // set frame rate (Hz value, fraction or abbreviation)
+
+  command << "-i - "; //
+
+  // outfile options
+  command << "-c:v libx264 "  // Hyper fast Audio and Video encoder
+          << "-pix_fmt yuv420p "  // set pixel format to yuv420p
+          << "-preset ultrafast " // set the libx264 encoding preset to ultrafast
+          << "-f flv " // force format to flv
+          << "rtmp://" + Config::Get()->BasicSetting()->rtmp_server_address() + ":"
+              + Config::Get()->BasicSetting()->rtmp_server_port + "/live/test";
+
+
   // 暂存: 检测状态、检测信息、图片的对象
   Info info;
 
@@ -88,6 +115,8 @@ int main(int argc, char **argv) {
 
   server.Start(); // 启动 rpc 服务
 
+  FILE *fp = nullptr;
+  fp = popen(command.str().c_str(), "w");
   while (true) {
     cv::Mat img;
     capture >> img;
@@ -125,12 +154,16 @@ int main(int argc, char **argv) {
 //      break;
 //    }
 
+    // cv::Mat 转换成 char 数组，传入 ffmpeg 的子进程中
+    fwrite(img.data, sizeof(char), img.total() * img.elemSize(), fp);
+
     if (!is_running) {
       break;
     }
 
   }
 
+  pclose(fp);     // 关闭子进程
   server.Stop();  // 停止 rpc 服务
   capture.release();  // 释放摄像头
   return EXIT_SUCCESS;
